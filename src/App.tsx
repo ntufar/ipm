@@ -115,71 +115,76 @@ function AppContent() {
     }
   }
 
-  // Update stock prices periodically
-  useEffect(() => {
-    const updateStockPrices = async () => {
-      setIsLoading(true)
-      try {
-        const symbols = portfolio.holdings.map(holding => holding.asset.symbol)
-        // Use Yahoo Finance service for real data
-        const stockQuotes = await yahooFinanceService.fetchMultipleQuotes(symbols)
+  // Update stock prices periodically - disabled for now to prevent interference with deletions
+  // useEffect(() => {
+  //   const updateStockPrices = async () => {
+  //     setIsLoading(true)
+  //     try {
+  //       const symbols = portfolio.holdings.map(holding => holding.asset.symbol)
+  //       if (symbols.length === 0) {
+  //         setIsLoading(false)
+  //         return
+  //       }
         
-        // Update portfolio with new prices
-        const updatedHoldings = portfolio.holdings.map(holding => {
-          const quote = stockQuotes.find(q => q.symbol === holding.asset.symbol)
-          if (quote) {
-            const updatedAsset = {
-              ...holding.asset,
-              currentPrice: quote.price,
-              change24h: quote.change,
-              changePercent24h: quote.changePercent
-            }
+  //       // Use Yahoo Finance service for real data
+  //       const stockQuotes = await yahooFinanceService.fetchMultipleQuotes(symbols)
+        
+  //       // Update portfolio with new prices
+  //       const updatedHoldings = portfolio.holdings.map(holding => {
+  //         const quote = stockQuotes.find(q => q.symbol === holding.asset.symbol)
+  //         if (quote) {
+  //           const updatedAsset = {
+  //             ...holding.asset,
+  //             currentPrice: quote.price,
+  //             change24h: quote.change,
+  //             changePercent24h: quote.changePercent
+  //           }
             
-            const currentValue = holding.quantity * quote.price
-            const gainLoss = currentValue - holding.totalCost
-            const gainLossPercent = (gainLoss / holding.totalCost) * 100
+  //           const currentValue = holding.quantity * quote.price
+  //           const gainLoss = currentValue - holding.totalCost
+  //           const gainLossPercent = (gainLoss / holding.totalCost) * 100
             
-            return {
-              ...holding,
-              asset: updatedAsset,
-              currentValue,
-              gainLoss,
-              gainLossPercent
-            }
-          }
-          return holding
-        })
+  //           return {
+  //             ...holding,
+  //             asset: updatedAsset,
+  //             currentValue,
+  //             gainLoss,
+  //             gainLossPercent
+  //           }
+  //         }
+  //         return holding
+  //       })
         
-        // Recalculate portfolio totals
-        const totalValue = updatedHoldings.reduce((sum, holding) => sum + holding.currentValue, 0)
-        const totalCost = updatedHoldings.reduce((sum, holding) => sum + holding.totalCost, 0)
-        const totalGainLoss = totalValue - totalCost
-        const totalGainLossPercent = (totalGainLoss / totalCost) * 100
+  //       // Recalculate portfolio totals
+  //       const totalValue = updatedHoldings.reduce((sum, holding) => sum + holding.currentValue, 0)
+  //       const totalCost = updatedHoldings.reduce((sum, holding) => sum + holding.totalCost, 0)
+  //       const totalGainLoss = totalValue - totalCost
+  //       const totalGainLossPercent = (totalCost > 0) ? (totalGainLoss / totalCost) * 100 : 0
         
-        const updatedPortfolio: Portfolio = {
-          ...portfolio,
-          holdings: updatedHoldings,
-          totalValue,
-          totalGainLoss,
-          totalGainLossPercent,
-          lastUpdated: new Date()
-        }
+  //       const updatedPortfolio: Portfolio = {
+  //         ...portfolio,
+  //         holdings: updatedHoldings,
+  //         totalValue,
+  //         totalGainLoss,
+  //         totalGainLossPercent,
+  //         lastUpdated: new Date()
+  //       }
         
-        setPortfolio(updatedPortfolio)
-        setLastUpdated(new Date())
-      } catch (error) {
-        console.error('Failed to update stock prices:', error)
-      } finally {
-        setIsLoading(false)
-      }
-    }
+  //       setPortfolio(updatedPortfolio)
+  //       setLastUpdated(new Date())
+  //     } catch (error) {
+  //       console.error('Failed to update stock prices:', error)
+  //     } finally {
+  //       setIsLoading(false)
+  //     }
+  //   }
 
-    // Update prices immediately and then every 5 minutes
-    updateStockPrices()
-    const interval = setInterval(updateStockPrices, 5 * 60 * 1000)
+  //   // Update prices immediately and then every 5 minutes
+  //   updateStockPrices()
+  //   const interval = setInterval(updateStockPrices, 5 * 60 * 1000)
     
-    return () => clearInterval(interval)
-  }, [portfolio.holdings.length]) // Only re-run when holdings change
+  //   return () => clearInterval(interval)
+  // }, [portfolio.holdings.length]) // Only re-run when holdings change
 
   const handlePortfolioUpdate = (updatedPortfolio: Portfolio) => {
     setPortfolio(updatedPortfolio)
@@ -210,28 +215,27 @@ function AppContent() {
   }
 
   const handleDeleteHolding = (holdingId: string) => {
-    console.log('Deleting holding with ID:', holdingId)
-    console.log('Current holdings count:', portfolio.holdings.length)
+    console.log('=== DELETING HOLDING ===')
+    console.log('Holding ID to delete:', holdingId)
+    console.log('Current holdings:', portfolio.holdings.map(h => ({ id: h.id, symbol: h.asset.symbol })))
     
     // Find the holding to get its asset symbol
     const holdingToDelete = portfolio.holdings.find(holding => holding.id === holdingId)
     if (!holdingToDelete) {
-      console.log('Holding not found')
+      console.error('Holding not found with ID:', holdingId)
       return
     }
     
     const assetSymbol = holdingToDelete.asset.symbol
     console.log('Asset symbol to remove:', assetSymbol)
     
-    // Remove the holding
-    const updatedHoldings = portfolio.holdings.filter(holding => holding.id !== holdingId)
+    // Remove the holding - create a completely new array
+    const updatedHoldings = [...portfolio.holdings].filter(holding => holding.id !== holdingId)
+    console.log('Updated holdings after filter:', updatedHoldings.map(h => ({ id: h.id, symbol: h.asset.symbol })))
     
-    // Remove all transactions for this asset
-    const updatedTransactions = portfolio.transactions.filter(transaction => transaction.asset.symbol !== assetSymbol)
-    
-    console.log('Updated holdings count:', updatedHoldings.length)
-    console.log('Updated transactions count:', updatedTransactions.length)
-    console.log('Removed transactions for asset:', assetSymbol)
+    // Remove all transactions for this asset - create a completely new array
+    const updatedTransactions = [...portfolio.transactions].filter(transaction => transaction.asset.symbol !== assetSymbol)
+    console.log('Updated transactions after filter:', updatedTransactions.length)
     
     // Recalculate portfolio totals
     const totalValue = updatedHoldings.reduce((sum, holding) => sum + holding.currentValue, 0)
@@ -250,8 +254,11 @@ function AppContent() {
       lastUpdated: new Date()
     }
     
-    console.log('Updated portfolio:', updatedPortfolio)
-    setPortfolio(updatedPortfolio)
+    console.log('Final updated portfolio holdings:', updatedPortfolio.holdings.map(h => ({ id: h.id, symbol: h.asset.symbol })))
+    console.log('=== SETTING PORTFOLIO ===')
+    
+    // Force a new object reference to ensure React detects the change
+    setPortfolio({ ...updatedPortfolio })
   }
 
   // Keyboard shortcuts

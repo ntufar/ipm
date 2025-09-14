@@ -21,6 +21,8 @@ export function VirtualHoldingsList({
   onUpdateHolding,
   onDeleteHolding
 }: VirtualHoldingsListProps) {
+  console.log('VirtualHoldingsList received holdings:', holdings.map(h => ({ id: h.id, symbol: h.asset.symbol })))
+  
   const colors = getThemeColors(isDarkMode)
   const themeStyles = getThemeStyles(isDarkMode)
   const [scrollTop, setScrollTop] = useState(0)
