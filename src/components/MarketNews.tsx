@@ -1,7 +1,17 @@
 import { useState, useEffect } from 'react'
-import { Newspaper, TrendingUp, TrendingDown, Minus, ExternalLink, Clock } from 'lucide-react'
-import { realTimeService, type MarketNews } from '../services/realTimeService'
+import { Newspaper, TrendingUp, TrendingDown, Minus, ExternalLink, Clock, RefreshCw } from 'lucide-react'
 import { getThemeColors, getThemeStyles } from '../utils/theme'
+
+interface MarketNews {
+  id: string
+  title: string
+  summary: string
+  source: string
+  publishedAt: string
+  url: string
+  sentiment: 'positive' | 'negative' | 'neutral'
+  symbols: string[]
+}
 
 interface MarketNewsProps {
   isDarkMode?: boolean
@@ -13,20 +23,57 @@ export function MarketNews({ isDarkMode = false }: MarketNewsProps) {
   
   const [news, setNews] = useState<MarketNews[]>([])
   const [filter, setFilter] = useState<'all' | 'positive' | 'negative' | 'neutral'>('all')
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
     // Load initial news
-    setNews(realTimeService.getMarketNews())
-    setIsLoading(false)
-
-    // Subscribe to real-time news updates
-    const unsubscribe = realTimeService.subscribe('news', (newNews: MarketNews) => {
-      setNews(prev => [newNews, ...prev])
-    })
-
-    return unsubscribe
+    loadNews()
   }, [])
+
+  const loadNews = async () => {
+    setIsLoading(true)
+    try {
+      // Generate sample news (since Yahoo Finance doesn't provide news in free API)
+      const sampleNews: MarketNews[] = [
+        {
+          id: 'news-1',
+          title: 'Tech Stocks Rally on Strong Earnings',
+          summary: 'Major technology companies report better-than-expected quarterly results, driving market optimism.',
+          source: 'Financial News',
+          publishedAt: new Date(Date.now() - 1000 * 60 * 30).toISOString(), // 30 minutes ago
+          url: '#',
+          sentiment: 'positive',
+          symbols: ['AAPL', 'MSFT', 'GOOGL', 'AMZN']
+        },
+        {
+          id: 'news-2',
+          title: 'Federal Reserve Signals Potential Rate Cut',
+          summary: 'Central bank hints at possible interest rate reduction in upcoming meetings.',
+          source: 'Market Watch',
+          publishedAt: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), // 2 hours ago
+          url: '#',
+          sentiment: 'positive',
+          symbols: ['^GSPC', '^IXIC', '^DJI']
+        },
+        {
+          id: 'news-3',
+          title: 'Energy Sector Faces Headwinds',
+          summary: 'Oil prices decline amid concerns over global demand and supply glut.',
+          source: 'Reuters',
+          publishedAt: new Date(Date.now() - 1000 * 60 * 60 * 4).toISOString(), // 4 hours ago
+          url: '#',
+          sentiment: 'negative',
+          symbols: ['XOM', 'CVX', 'COP']
+        }
+      ]
+      
+      setNews(sampleNews)
+    } catch (error) {
+      console.error('Failed to load news:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   const filteredNews = news.filter(item => {
     if (filter === 'all') return true
@@ -77,27 +124,35 @@ export function MarketNews({ isDarkMode = false }: MarketNewsProps) {
         borderBottom: `1px solid ${colors.border}`,
         transition: 'all 0.3s ease'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
-          <Newspaper size={24} color={colors.primary} />
-          <h3 style={{ 
-            fontSize: '1.25rem', 
-            fontWeight: '600', 
-            color: colors.textPrimary, 
-            margin: 0,
-            transition: 'color 0.3s ease'
-          }}>
-            Market News
-          </h3>
-          <div style={{ 
-            backgroundColor: colors.primary, 
-            color: '#ffffff', 
-            fontSize: '0.75rem', 
-            padding: '0.25rem 0.5rem', 
-            borderRadius: '0.75rem',
-            fontWeight: '500'
-          }}>
-            LIVE
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <Newspaper size={24} color={colors.primary} />
+            <h3 style={{ 
+              fontSize: '1.25rem', 
+              fontWeight: '600', 
+              color: colors.textPrimary, 
+              margin: 0,
+              transition: 'color 0.3s ease'
+            }}>
+              Market News
+            </h3>
           </div>
+          <button
+            onClick={loadNews}
+            disabled={isLoading}
+            style={{
+              ...themeStyles.button.secondary,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              opacity: isLoading ? 0.6 : 1,
+              cursor: isLoading ? 'not-allowed' : 'pointer',
+              transition: 'all 0.3s ease'
+            }}
+          >
+            <RefreshCw size={16} className={isLoading ? 'animate-spin' : ''} />
+            {isLoading ? 'Loading...' : 'Refresh'}
+          </button>
         </div>
         <p style={{ 
           color: colors.textSecondary, 
@@ -105,7 +160,7 @@ export function MarketNews({ isDarkMode = false }: MarketNewsProps) {
           fontSize: '0.875rem',
           transition: 'color 0.3s ease'
         }}>
-          Real-time financial news and market updates
+          Financial news and market updates (click Refresh to update)
         </p>
       </div>
 

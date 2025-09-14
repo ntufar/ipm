@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { TrendingUp, TrendingDown, Minus, RefreshCw, Zap } from 'lucide-react'
-import { realTimeService, type RealTimeQuote } from '../services/realTimeService'
+import { yahooFinanceService, type YahooQuote } from '../services/yahooFinanceService'
 import { getThemeColors, getThemeStyles } from '../utils/theme'
 
 interface RealTimeQuotesProps {
@@ -12,44 +12,39 @@ export function RealTimeQuotes({ symbols, isDarkMode = false }: RealTimeQuotesPr
   const colors = getThemeColors(isDarkMode)
   const themeStyles = getThemeStyles(isDarkMode)
   
-  const [quotes, setQuotes] = useState<RealTimeQuote[]>([])
+  const [quotes, setQuotes] = useState<YahooQuote[]>([])
   const [isConnected, setIsConnected] = useState(false)
-  const [lastUpdate, setLastUpdate] = useState<Date>(new Date())
+  const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
-    // Connect to real-time service
-    realTimeService.connect().then(() => {
+    // Connect to Yahoo Finance service
+    yahooFinanceService.connect().then(() => {
       setIsConnected(true)
     }).catch(error => {
-      console.error('Failed to connect to real-time service:', error)
-    })
-
-    // Subscribe to quote updates
-    const unsubscribe = realTimeService.subscribe('quote', (quote: RealTimeQuote) => {
-      if (symbols.includes(quote.symbol)) {
-        setQuotes(prev => {
-          const existing = prev.find(q => q.symbol === quote.symbol)
-          if (existing) {
-            return prev.map(q => q.symbol === quote.symbol ? quote : q)
-          } else {
-            return [...prev, quote].sort((a, b) => a.symbol.localeCompare(b.symbol))
-          }
-        })
-        setLastUpdate(new Date())
-      }
+      console.error('Failed to connect to Yahoo Finance service:', error)
     })
 
     // Load initial quotes
-    const initialQuotes = symbols
-      .map(symbol => realTimeService.getQuote(symbol))
-      .filter((quote): quote is RealTimeQuote => quote !== null)
-    setQuotes(initialQuotes)
+    loadQuotes()
 
     return () => {
-      unsubscribe()
-      realTimeService.disconnect()
+      yahooFinanceService.disconnect()
     }
   }, [symbols])
+
+  const loadQuotes = async () => {
+    if (!isConnected) return
+    
+    setIsLoading(true)
+    try {
+      const quotes = await yahooFinanceService.refreshQuotes(symbols)
+      setQuotes(quotes)
+    } catch (error) {
+      console.error('Failed to load quotes:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -126,17 +121,22 @@ export function RealTimeQuotes({ symbols, isDarkMode = false }: RealTimeQuotesPr
               {isConnected ? 'LIVE' : 'OFFLINE'}
             </div>
           </div>
-          <div style={{ 
-            fontSize: '0.75rem', 
-            color: colors.textSecondary,
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            transition: 'color 0.3s ease'
-          }}>
-            <RefreshCw size={12} />
-            Last update: {lastUpdate.toLocaleTimeString()}
-          </div>
+            <button
+              onClick={loadQuotes}
+              disabled={isLoading || !isConnected}
+              style={{
+                ...themeStyles.button.secondary,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                opacity: (isLoading || !isConnected) ? 0.6 : 1,
+                cursor: (isLoading || !isConnected) ? 'not-allowed' : 'pointer',
+                transition: 'all 0.3s ease'
+              }}
+            >
+              <RefreshCw size={16} className={isLoading ? 'animate-spin' : ''} />
+              {isLoading ? 'Loading...' : 'Refresh'}
+            </button>
         </div>
         <p style={{ 
           color: colors.textSecondary, 
@@ -144,7 +144,7 @@ export function RealTimeQuotes({ symbols, isDarkMode = false }: RealTimeQuotesPr
           fontSize: '0.875rem',
           transition: 'color 0.3s ease'
         }}>
-          Live price updates for your portfolio holdings
+          Real-time price data from Yahoo Finance (click Refresh to update)
         </p>
       </div>
 
@@ -159,10 +159,10 @@ export function RealTimeQuotes({ symbols, isDarkMode = false }: RealTimeQuotesPr
           }}>
             <Zap size={48} style={{ margin: '0 auto 1rem', opacity: 0.5 }} />
             <p style={{ margin: 0, fontSize: '1rem' }}>
-              {isConnected ? 'No quotes available' : 'Connecting to real-time data...'}
+              {isLoading ? 'Loading quotes...' : 'No quotes available'}
             </p>
             <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.875rem' }}>
-              {isConnected ? 'Quotes will appear here as they become available' : 'Please wait while we establish connection'}
+              {isLoading ? 'Fetching real-time data from Yahoo Finance...' : 'Click Refresh to load current prices'}
             </p>
           </div>
         ) : (

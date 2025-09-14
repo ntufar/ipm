@@ -1,7 +1,16 @@
 import { useState, useEffect } from 'react'
-import { Clock, TrendingUp, TrendingDown, Minus, AlertCircle, CheckCircle } from 'lucide-react'
-import { realTimeService, type MarketIndex } from '../services/realTimeService'
+import { Clock, TrendingUp, TrendingDown, Minus, AlertCircle, CheckCircle, RefreshCw } from 'lucide-react'
+import { yahooFinanceService } from '../services/yahooFinanceService'
 import { getThemeColors, getThemeStyles } from '../utils/theme'
+
+interface MarketIndex {
+  symbol: string
+  name: string
+  price: number
+  change: number
+  changePercent: number
+  timestamp: number
+}
 
 interface MarketStatusProps {
   isDarkMode?: boolean
@@ -17,17 +26,14 @@ export function MarketStatus({ isDarkMode = false }: MarketStatusProps) {
   const [nextClose, setNextClose] = useState<Date | null>(null)
   const [timeUntilOpen, setTimeUntilOpen] = useState<string>('')
   const [timeUntilClose, setTimeUntilClose] = useState<string>('')
+  const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
-    // Load initial data
-    setIndices(realTimeService.getMarketIndices())
-    setIsMarketOpen(realTimeService.isMarketOpen())
-    setNextOpen(realTimeService.getNextMarketOpenTime())
-    setNextClose(realTimeService.getNextMarketCloseTime())
-
-    // Subscribe to real-time updates
-    const unsubscribeIndices = realTimeService.subscribe('indices', (newIndices: MarketIndex[]) => {
-      setIndices(newIndices)
+    // Connect to Yahoo Finance service
+    yahooFinanceService.connect().then(() => {
+      loadMarketData()
+    }).catch(error => {
+      console.error('Failed to connect to Yahoo Finance service:', error)
     })
 
     // Update time remaining every minute
@@ -39,10 +45,81 @@ export function MarketStatus({ isDarkMode = false }: MarketStatusProps) {
     updateTimeRemaining()
 
     return () => {
-      unsubscribeIndices()
+      yahooFinanceService.disconnect()
       clearInterval(timeInterval)
     }
   }, [])
+
+  const loadMarketData = async () => {
+    setIsLoading(true)
+    try {
+      // Load market indices from Yahoo Finance
+      const indexSymbols = ['^GSPC', '^IXIC', '^DJI'] // S&P 500, NASDAQ, Dow Jones
+      const quotes = await yahooFinanceService.fetchMultipleQuotes(indexSymbols)
+      
+      const marketIndices: MarketIndex[] = quotes.map(quote => ({
+        symbol: quote.symbol,
+        name: getIndexName(quote.symbol),
+        price: quote.price,
+        change: quote.change,
+        changePercent: quote.changePercent,
+        timestamp: quote.timestamp
+      }))
+      
+      setIndices(marketIndices)
+      
+      // Determine market status based on current time
+      const now = new Date()
+      const marketOpen = new Date(now)
+      marketOpen.setHours(9, 30, 0, 0) // 9:30 AM EST
+      const marketClose = new Date(now)
+      marketClose.setHours(16, 0, 0, 0) // 4:00 PM EST
+      
+      const isWeekday = now.getDay() >= 1 && now.getDay() <= 5
+      const isMarketHours = now >= marketOpen && now <= marketClose
+      
+      setIsMarketOpen(isWeekday && isMarketHours)
+      setNextOpen(getNextMarketOpen())
+      setNextClose(getNextMarketClose())
+    } catch (error) {
+      console.error('Failed to load market data:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const getIndexName = (symbol: string): string => {
+    switch (symbol) {
+      case '^GSPC': return 'S&P 500'
+      case '^IXIC': return 'NASDAQ'
+      case '^DJI': return 'Dow Jones'
+      default: return symbol
+    }
+  }
+
+  const getNextMarketOpen = (): Date => {
+    const now = new Date()
+    const nextOpen = new Date(now)
+    nextOpen.setHours(9, 30, 0, 0)
+    
+    if (now.getHours() >= 16 || now.getDay() === 0 || now.getDay() === 6) {
+      nextOpen.setDate(nextOpen.getDate() + (now.getDay() === 0 ? 1 : now.getDay() === 6 ? 2 : 1))
+    }
+    
+    return nextOpen
+  }
+
+  const getNextMarketClose = (): Date => {
+    const now = new Date()
+    const nextClose = new Date(now)
+    nextClose.setHours(16, 0, 0, 0)
+    
+    if (now.getHours() >= 16 || now.getDay() === 0 || now.getDay() === 6) {
+      nextClose.setDate(nextClose.getDate() + (now.getDay() === 0 ? 1 : now.getDay() === 6 ? 2 : 1))
+    }
+    
+    return nextClose
+  }
 
   const updateTimeRemaining = () => {
     const now = new Date()
@@ -102,31 +179,49 @@ export function MarketStatus({ isDarkMode = false }: MarketStatusProps) {
         borderBottom: `1px solid ${colors.border}`,
         transition: 'all 0.3s ease'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
-          <Clock size={24} color={colors.primary} />
-          <h3 style={{ 
-            fontSize: '1.25rem', 
-            fontWeight: '600', 
-            color: colors.textPrimary, 
-            margin: 0,
-            transition: 'color 0.3s ease'
-          }}>
-            Market Status
-          </h3>
-          <div style={{ 
-            backgroundColor: isMarketOpen ? colors.success : colors.error, 
-            color: '#ffffff', 
-            fontSize: '0.75rem', 
-            padding: '0.25rem 0.5rem', 
-            borderRadius: '0.75rem',
-            fontWeight: '500',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.25rem'
-          }}>
-            {isMarketOpen ? <CheckCircle size={12} /> : <AlertCircle size={12} />}
-            {isMarketOpen ? 'OPEN' : 'CLOSED'}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <Clock size={24} color={colors.primary} />
+            <h3 style={{ 
+              fontSize: '1.25rem', 
+              fontWeight: '600', 
+              color: colors.textPrimary, 
+              margin: 0,
+              transition: 'color 0.3s ease'
+            }}>
+              Market Status
+            </h3>
+            <div style={{ 
+              backgroundColor: isMarketOpen ? colors.success : colors.error, 
+              color: '#ffffff', 
+              fontSize: '0.75rem', 
+              padding: '0.25rem 0.5rem', 
+              borderRadius: '0.75rem',
+              fontWeight: '500',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.25rem'
+            }}>
+              {isMarketOpen ? <CheckCircle size={12} /> : <AlertCircle size={12} />}
+              {isMarketOpen ? 'OPEN' : 'CLOSED'}
+            </div>
           </div>
+          <button
+            onClick={loadMarketData}
+            disabled={isLoading}
+            style={{
+              ...themeStyles.button.secondary,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              opacity: isLoading ? 0.6 : 1,
+              cursor: isLoading ? 'not-allowed' : 'pointer',
+              transition: 'all 0.3s ease'
+            }}
+          >
+            <RefreshCw size={16} className={isLoading ? 'animate-spin' : ''} />
+            {isLoading ? 'Loading...' : 'Refresh'}
+          </button>
         </div>
         
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
