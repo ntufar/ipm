@@ -2,10 +2,17 @@
 
 A modern, feature-rich web application for tracking and managing your investment portfolio. Built with React, TypeScript, and Vite for optimal performance and developer experience.
 
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-https://ipm-tufar.vercel.app/-green?style=for-the-badge)](https://ipm-tufar.vercel.app/)
 ![Portfolio Manager](https://img.shields.io/badge/React-18.2.0-blue?logo=react)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.0.0-blue?logo=typescript)
 ![Vite](https://img.shields.io/badge/Vite-7.1.5-646CFF?logo=vite)
 ![License](https://img.shields.io/badge/License-MIT-green)
+
+## 🌐 Live Application
+
+**🚀 [Try the live application here](https://ipm-tufar.vercel.app/)**
+
+The application is deployed on Vercel with automatic deployments from GitHub. All features are fully functional in production.
 
 ## ✨ Features
 
@@ -14,6 +21,7 @@ A modern, feature-rich web application for tracking and managing your investment
 - Total value, cost basis, and gain/loss calculations
 - Performance percentage tracking
 - Last updated timestamps
+- Dynamic browser tab titles
 
 ### 📊 **Advanced Analytics**
 - Comprehensive portfolio insights and key metrics
@@ -24,8 +32,11 @@ A modern, feature-rich web application for tracking and managing your investment
 ### 💼 **Holdings Management**
 - Detailed holdings list with individual stock information
 - Current prices, 24h changes, and performance metrics
-- Real-time price updates from financial APIs
+- Real-time price updates from Yahoo Finance API
 - Gain/loss calculations for each position
+- **Edit holdings** with modal interface
+- **Delete holdings** with transaction cleanup
+- Virtual scrolling for large portfolios
 
 ### 📈 **Performance Charts**
 - Interactive performance charts using Recharts
@@ -36,9 +47,11 @@ A modern, feature-rich web application for tracking and managing your investment
 ### 💰 **Transaction Management**
 - Add buy/sell transactions with detailed forms
 - Transaction history with comprehensive records
-- Support for 50+ popular stocks across all sectors
+- **Real-time stock search** with live API integration
 - Smart search functionality for stock selection
 - Transaction fees and notes tracking
+- **Automatic holdings conversion** from transactions
+- **Transaction cleanup** when holdings are deleted
 
 ### 🌙 **Dark Mode Support**
 - Complete dark/light theme system
@@ -47,16 +60,40 @@ A modern, feature-rich web application for tracking and managing your investment
 - Smooth transitions between themes
 
 ### 🔄 **Real-time Data**
-- Live stock price updates from multiple APIs
-- Automatic price refresh every 5 minutes
-- Manual refresh functionality
+- Live stock price updates from Yahoo Finance API
+- Manual refresh functionality with loading states
+- **CORS proxy service** with multiple fallback options
+- **Rate limiting** and error handling
 - Fallback to mock data when APIs are unavailable
+- **Real-time market data** with market status indicators
 
 ### 💾 **Data Persistence**
 - Local storage integration
 - Portfolio data persistence across sessions
 - Automatic save/load functionality
 - Data backup and restoration
+
+### 📋 **Watchlist & Notifications**
+- **Stock watchlist** with real-time price monitoring
+- **Price alerts** and portfolio milestone notifications
+- **Target price tracking** for watchlist items
+- **Notes and tags** for watchlist items
+- **Smart notifications** for portfolio changes
+
+### 📊 **Advanced Analytics Dashboard**
+- **Risk metrics** including volatility and beta calculations
+- **Performance attribution** analysis
+- **Correlation analysis** between holdings
+- **Sector analysis** with detailed breakdowns
+- **Portfolio comparison** against market indices
+- **Advanced charting** with candlestick charts
+
+### 🎨 **User Experience**
+- **Loading skeletons** for better perceived performance
+- **Error boundaries** with user-friendly error messages
+- **Keyboard shortcuts** for power users
+- **Mobile-optimized** responsive design
+- **Performance optimization** with virtual scrolling
 
 ## 🚀 Quick Start
 
@@ -93,6 +130,21 @@ npm run build
 
 The built files will be in the `dist` directory, ready for deployment.
 
+### Deploy to Production
+
+The application is automatically deployed to Vercel when changes are pushed to the main branch.
+
+**Manual deployment:**
+```bash
+# Install Vercel CLI
+npm install -g vercel
+
+# Deploy to production
+vercel --prod
+```
+
+**Live Application:** [https://ipm-tufar.vercel.app/](https://ipm-tufar.vercel.app/)
+
 ## 🛠️ Technology Stack
 
 - **Frontend Framework**: React 18.2.0 with TypeScript
@@ -103,6 +155,9 @@ The built files will be in the `dist` directory, ready for deployment.
 - **Styling**: Inline styles with theme system
 - **State Management**: React Context API
 - **Data Persistence**: Local Storage
+- **APIs**: Yahoo Finance, Alpha Vantage, RapidAPI
+- **Deployment**: Vercel with automatic GitHub integration
+- **CORS Handling**: Custom proxy service with fallbacks
 
 ## 📱 Available Scripts
 
@@ -140,17 +195,23 @@ The theme system supports:
 - Persistent user preferences
 - Smooth transitions
 
-## 📊 Supported Stocks
+## 📊 Stock Data & Search
 
-The application includes 50+ popular stocks across major sectors:
+The application provides **real-time stock search** and data for thousands of stocks worldwide:
 
-- **Technology**: Apple, Google, Microsoft, NVIDIA, Meta, Amazon, Netflix, Oracle, Salesforce, Adobe
-- **Financial**: JPMorgan, Bank of America, Wells Fargo, Goldman Sachs
-- **Healthcare**: Johnson & Johnson, Pfizer, UnitedHealth, AbbVie, Gilead, Amgen, Biogen
-- **Consumer**: Walmart, Coca-Cola, Pepsi, P&G, Home Depot, McDonald's, Nike, Starbucks
-- **Energy**: Exxon, Chevron, ConocoPhillips
-- **Industrial**: Boeing, Caterpillar, General Electric
-- **And many more...**
+- **Real-time Search**: Live stock search with symbol and company name filtering
+- **Global Coverage**: Access to stocks from major exchanges (NYSE, NASDAQ, etc.)
+- **Live Data**: Real-time prices, changes, and market data from Yahoo Finance
+- **Smart Filtering**: Instant search results with debouncing and caching
+- **Fallback Support**: Mock data when APIs are unavailable
+
+### Sample Popular Stocks:
+- **Technology**: AAPL, GOOGL, MSFT, NVDA, META, AMZN, NFLX, ORCL, CRM, ADBE
+- **Financial**: JPM, BAC, WFC, GS, C, AXP, BLK, SCHW
+- **Healthcare**: JNJ, PFE, UNH, ABBV, GILD, AMGN, BIIB, MDT
+- **Consumer**: WMT, KO, PEP, PG, HD, MCD, NKE, SBUX
+- **Energy**: XOM, CVX, COP, EOG, SLB
+- **Industrial**: BA, CAT, GE, HON, UPS
 
 ## 🎨 Features in Detail
 
@@ -174,13 +235,19 @@ The application includes 50+ popular stocks across major sectors:
 
 ## 🔮 Future Enhancements
 
-- [ ] Portfolio comparison against market indices
+- [x] ~~Portfolio comparison against market indices~~ ✅ **Implemented**
+- [x] ~~Price alerts and portfolio milestone notifications~~ ✅ **Implemented**
+- [x] ~~Advanced chart types and interactive visualizations~~ ✅ **Implemented**
+- [x] ~~Mobile optimization and responsive design~~ ✅ **Implemented**
+- [x] ~~Real-time stock search and data~~ ✅ **Implemented**
+- [x] ~~Advanced analytics dashboard~~ ✅ **Implemented**
+- [x] ~~Holdings editing and deletion~~ ✅ **Implemented**
 - [ ] CSV/JSON export and import functionality
-- [ ] Mobile optimization and responsive design
-- [ ] Price alerts and portfolio milestone notifications
-- [ ] Advanced chart types and interactive visualizations
 - [ ] Portfolio rebalancing suggestions
 - [ ] Tax reporting and capital gains tracking
+- [ ] PWA features and offline mode
+- [ ] AI/ML predictive analytics
+- [ ] Social sharing and collaboration features
 
 ## 🤝 Contributing
 
