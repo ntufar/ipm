@@ -2,6 +2,7 @@
 // Uses CORS proxy to handle cross-origin requests
 
 import { corsProxyService } from './corsProxyService'
+import { fallbackDataService, type FallbackQuote } from './fallbackDataService'
 
 export interface YahooQuote {
   symbol: string
@@ -68,27 +69,42 @@ class YahooFinanceService {
       }
     } catch (error) {
       console.error(`Error fetching quote for ${symbol}:`, error)
-      // Return mock data as fallback when all proxies fail
-      return this.getMockQuote(symbol)
+      // Use fallback service when all proxies fail
+      const fallbackQuote = await fallbackDataService.fetchQuote(symbol)
+      return fallbackQuote ? this.convertFallbackQuote(fallbackQuote) : this.getMockQuote(symbol)
     }
   }
 
   public async fetchMultipleQuotes(symbols: string[]): Promise<YahooQuote[]> {
-    const quotes: YahooQuote[] = []
-    
-    // Fetch quotes in parallel (Yahoo Finance allows this)
-    const promises = symbols.map(symbol => this.fetchQuote(symbol))
-    const results = await Promise.allSettled(promises)
-    
-    results.forEach((result, index) => {
-      if (result.status === 'fulfilled' && result.value) {
-        quotes.push(result.value)
-      } else {
-        console.error(`Failed to fetch quote for ${symbols[index]}:`, result.status === 'rejected' ? result.reason : 'No data')
+    try {
+      // Try to fetch all quotes in parallel
+      const promises = symbols.map(symbol => this.fetchQuote(symbol))
+      const results = await Promise.allSettled(promises)
+      
+      const quotes: YahooQuote[] = []
+      results.forEach((result, index) => {
+        if (result.status === 'fulfilled' && result.value) {
+          quotes.push(result.value)
+        } else {
+          console.error(`Failed to fetch quote for ${symbols[index]}:`, result.status === 'rejected' ? result.reason : 'No data')
+        }
+      })
+      
+      // If we got some quotes, return them
+      if (quotes.length > 0) {
+        return quotes
       }
-    })
-    
-    return quotes
+      
+      // If all failed, try fallback service
+      console.warn('All Yahoo Finance requests failed, using fallback service')
+      const fallbackQuotes = await fallbackDataService.fetchMultipleQuotes(symbols)
+      return fallbackQuotes.map(quote => this.convertFallbackQuote(quote))
+    } catch (error) {
+      console.error('Error fetching multiple quotes:', error)
+      // Final fallback to mock data
+      const fallbackQuotes = await fallbackDataService.fetchMultipleQuotes(symbols)
+      return fallbackQuotes.map(quote => this.convertFallbackQuote(quote))
+    }
   }
 
   public subscribe(event: string, callback: (data: any) => void): () => void {
@@ -176,6 +192,21 @@ class YahooFinanceService {
       open: mockData.price + (Math.random() - 0.5) * 2,
       previousClose: mockData.price - mockData.change,
       timestamp: Date.now()
+    }
+  }
+
+  private convertFallbackQuote(fallbackQuote: FallbackQuote): YahooQuote {
+    return {
+      symbol: fallbackQuote.symbol,
+      price: fallbackQuote.price,
+      change: fallbackQuote.change,
+      changePercent: fallbackQuote.changePercent,
+      volume: fallbackQuote.volume,
+      high: fallbackQuote.high,
+      low: fallbackQuote.low,
+      open: fallbackQuote.open,
+      previousClose: fallbackQuote.previousClose,
+      timestamp: fallbackQuote.timestamp
     }
   }
 }

@@ -9,13 +9,18 @@ export interface ProxyConfig {
 
 const PROXY_OPTIONS: ProxyConfig[] = [
   {
-    name: 'thingproxy',
-    url: 'https://thingproxy.freeboard.io/fetch/',
+    name: 'corsproxy',
+    url: 'https://corsproxy.io/?',
+    requiresEncoding: true
+  },
+  {
+    name: 'proxycors',
+    url: 'https://proxy.cors.sh/',
     requiresEncoding: false
   },
   {
-    name: 'cors-anywhere',
-    url: 'https://cors-anywhere.herokuapp.com/',
+    name: 'thingproxy',
+    url: 'https://thingproxy.freeboard.io/fetch/',
     requiresEncoding: false
   },
   {
@@ -60,6 +65,11 @@ class CORSProxyService {
       if (!response.ok) {
         if (response.status === 429) {
           console.warn(`Proxy ${proxy.name} rate limited (429), trying next proxy`)
+          this.failedProxies.add(proxy.name)
+          return this.tryNextProxy(targetUrl, options)
+        }
+        if (response.status === 403) {
+          console.warn(`Proxy ${proxy.name} forbidden (403), trying next proxy`)
           this.failedProxies.add(proxy.name)
           return this.tryNextProxy(targetUrl, options)
         }

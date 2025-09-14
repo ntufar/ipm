@@ -3,6 +3,7 @@
 // Fallback: Alpha Vantage search
 
 import { corsProxyService } from './corsProxyService'
+import { fallbackDataService, type FallbackSearchResult } from './fallbackDataService'
 
 export interface StockSearchResult {
   symbol: string
@@ -45,8 +46,9 @@ class StockSearchService {
       return results
     } catch (error) {
       console.error('Error searching stocks:', error)
-      // Return mock search results when all proxies fail
-      return this.getMockSearchResults(query, limit)
+      // Use fallback service when all proxies fail
+      const fallbackResults = await fallbackDataService.searchStocks(query, limit)
+      return fallbackResults.map(result => this.convertFallbackSearchResult(result))
     }
   }
 
@@ -134,39 +136,20 @@ class StockSearchService {
     this.cacheExpiry.clear()
   }
 
-  private getMockSearchResults(query: string, limit: number): StockSearchResult[] {
-    // Mock search results for when all proxies fail
-    const mockStocks = [
-      { symbol: 'AAPL', name: 'Apple Inc.', exchange: 'NASDAQ' },
-      { symbol: 'GOOGL', name: 'Alphabet Inc.', exchange: 'NASDAQ' },
-      { symbol: 'MSFT', name: 'Microsoft Corporation', exchange: 'NASDAQ' },
-      { symbol: 'NVDA', name: 'NVIDIA Corporation', exchange: 'NASDAQ' },
-      { symbol: 'META', name: 'Meta Platforms Inc.', exchange: 'NASDAQ' },
-      { symbol: 'AMZN', name: 'Amazon.com Inc.', exchange: 'NASDAQ' },
-      { symbol: 'TSLA', name: 'Tesla Inc.', exchange: 'NASDAQ' },
-      { symbol: 'NFLX', name: 'Netflix Inc.', exchange: 'NASDAQ' },
-      { symbol: 'ORCL', name: 'Oracle Corporation', exchange: 'NYSE' },
-      { symbol: 'CRM', name: 'Salesforce Inc.', exchange: 'NYSE' }
-    ]
 
-    return mockStocks
-      .filter(stock => 
-        stock.symbol.toLowerCase().includes(query.toLowerCase()) ||
-        stock.name.toLowerCase().includes(query.toLowerCase())
-      )
-      .slice(0, limit)
-      .map(stock => ({
-        symbol: stock.symbol,
-        name: stock.name,
-        exchange: stock.exchange,
-        type: 'EQUITY',
-        region: 'US',
-        currency: 'USD',
-        marketState: 'REGULAR',
-        price: 100 + Math.random() * 200,
-        change: (Math.random() - 0.5) * 10,
-        changePercent: (Math.random() - 0.5) * 5
-      }))
+  private convertFallbackSearchResult(fallbackResult: FallbackSearchResult): StockSearchResult {
+    return {
+      symbol: fallbackResult.symbol,
+      name: fallbackResult.name,
+      exchange: fallbackResult.exchange,
+      type: fallbackResult.type,
+      region: fallbackResult.region,
+      currency: fallbackResult.currency,
+      marketState: fallbackResult.marketState,
+      price: fallbackResult.price,
+      change: fallbackResult.change,
+      changePercent: fallbackResult.changePercent
+    }
   }
 }
 
