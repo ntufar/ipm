@@ -1,4 +1,4 @@
-import { Holding, Portfolio, PerformanceData } from '../types';
+import { Holding, Portfolio, PerformanceData } from '../types/index.js';
 
 export const calculateHoldingValue = (holding: Holding): number => {
   return holding.quantity * holding.asset.currentPrice;

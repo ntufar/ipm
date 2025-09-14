@@ -4,7 +4,7 @@ import { HoldingsList } from './components/HoldingsList'
 import { PerformanceChart } from './components/PerformanceChart'
 import { AddTransaction } from './components/AddTransaction'
 import { samplePortfolio } from './data/sampleData'
-import { Portfolio } from './types'
+import { Portfolio } from './types/index.js'
 import './App.css'
 
 function App() {
