@@ -422,7 +422,27 @@ export function About({ isDarkMode = false }: AboutProps) {
           margin: '0.5rem 0 0 0',
           fontSize: '0.75rem'
         }}>
-          © 2025 Nicolai Tufar. All rights reserved.
+          © 2025{' '}
+          <a
+            href="https://github.com/ntufar"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              color: colors.primary,
+              textDecoration: 'none',
+              fontWeight: '500',
+              transition: 'color 0.3s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = colors.accent
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = colors.primary
+            }}
+          >
+            Nicolai Tufar
+          </a>
+          . All rights reserved.
         </p>
       </div>
     </div>
