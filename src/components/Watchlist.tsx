@@ -1,8 +1,10 @@
 import { useState, useEffect, useMemo } from 'react'
-import { Plus, Star, StarOff, Search, EyeOff } from 'lucide-react'
+import { Plus, Star, StarOff, Search, EyeOff, Loader2 } from 'lucide-react'
 import type { Asset } from '../types/index.js'
 import { getThemeColors, getThemeStyles } from '../utils/theme'
 import { sampleAssets } from '../data/sampleData'
+import { stockSearchService, type StockSearchResult } from '../services/stockSearchService'
+import { yahooFinanceService } from '../services/yahooFinanceService'
 
 interface WatchlistProps {
   isDarkMode?: boolean
@@ -24,6 +26,8 @@ export function Watchlist({ isDarkMode = false }: WatchlistProps) {
   const [watchlist, setWatchlist] = useState<WatchlistItem[]>([])
   const [searchTerm, setSearchTerm] = useState('')
   const [showAddModal, setShowAddModal] = useState(false)
+  const [searchResults, setSearchResults] = useState<StockSearchResult[]>([])
+  const [isSearching, setIsSearching] = useState(false)
 
   // Load watchlist from localStorage
   useEffect(() => {
@@ -47,12 +51,38 @@ export function Watchlist({ isDarkMode = false }: WatchlistProps) {
     localStorage.setItem('portfolio-watchlist', JSON.stringify(watchlist))
   }, [watchlist])
 
-  // Filter assets based on search term
-  const filteredAssets = useMemo(() => {
+  // Search for stocks when search term changes
+  useEffect(() => {
+    const searchStocks = async () => {
+      if (searchTerm.length < 2) {
+        setSearchResults([])
+        return
+      }
+
+      setIsSearching(true)
+      try {
+        const results = await stockSearchService.searchStocks(searchTerm, 20)
+        setSearchResults(results)
+      } catch (error) {
+        console.error('Error searching stocks:', error)
+        setSearchResults([])
+      } finally {
+        setIsSearching(false)
+      }
+    }
+
+    const timeoutId = setTimeout(searchStocks, 300) // Debounce search
+    return () => clearTimeout(timeoutId)
+  }, [searchTerm])
+
+  // Filter sample assets as fallback
+  const filteredSampleAssets = useMemo(() => {
+    if (!searchTerm) return sampleAssets.slice(0, 10) // Show only first 10 sample assets
+    
     return sampleAssets.filter(asset => 
       asset.symbol.toLowerCase().includes(searchTerm.toLowerCase()) ||
       asset.name.toLowerCase().includes(searchTerm.toLowerCase())
-    ).slice(0, 20) // Limit to 20 results for performance
+    ).slice(0, 10)
   }, [searchTerm])
 
   // Filter watchlist based on search term
@@ -65,7 +95,7 @@ export function Watchlist({ isDarkMode = false }: WatchlistProps) {
   }, [watchlist, searchTerm])
 
   const addToWatchlist = (asset: Asset) => {
-    const existingItem = watchlist.find(item => item.asset.id === asset.id)
+    const existingItem = watchlist.find(item => item.asset.symbol === asset.symbol)
     if (existingItem) return
 
     const newItem: WatchlistItem = {
@@ -77,6 +107,34 @@ export function Watchlist({ isDarkMode = false }: WatchlistProps) {
 
     setWatchlist(prev => [...prev, newItem])
     setShowAddModal(false)
+  }
+
+  const handleStockSelect = async (searchResult: StockSearchResult) => {
+    try {
+      // Get current price for the selected stock
+      const quote = await yahooFinanceService.fetchQuote(searchResult.symbol)
+      
+      const newAsset: Asset = {
+        id: `asset-${Date.now()}`,
+        symbol: searchResult.symbol,
+        name: searchResult.name,
+        currentPrice: quote?.price || 0,
+        currency: searchResult.currency || 'USD',
+        change24h: quote?.change || 0,
+        changePercent24h: quote?.changePercent || 0,
+        marketCap: undefined, // Not available in search results
+        pe: undefined, // Not available in search results
+        dividendYield: undefined, // Not available in search results
+        high52Week: undefined, // Not available in search results
+        low52Week: undefined, // Not available in search results
+      }
+
+      addToWatchlist(newAsset)
+      setSearchTerm('')
+      setSearchResults([])
+    } catch (error) {
+      console.error('Error selecting stock:', error)
+    }
   }
 
   const removeFromWatchlist = (id: string) => {
@@ -167,6 +225,19 @@ export function Watchlist({ isDarkMode = false }: WatchlistProps) {
               color: colors.textSecondary
             }} 
           />
+          {isSearching && (
+            <Loader2 
+              size={20} 
+              style={{ 
+                position: 'absolute', 
+                right: '0.75rem', 
+                top: '50%', 
+                transform: 'translateY(-50%)',
+                color: colors.textSecondary,
+                animation: 'spin 1s linear infinite'
+              }} 
+            />
+          )}
           <input
             type="text"
             placeholder="Search stocks to add to watchlist..."
@@ -176,9 +247,136 @@ export function Watchlist({ isDarkMode = false }: WatchlistProps) {
               ...themeStyles.input,
               width: '100%',
               paddingLeft: '2.5rem',
+              paddingRight: isSearching ? '2.5rem' : '0.75rem',
               transition: 'all 0.3s ease'
             }}
           />
+          
+          {/* Search Results */}
+          {(searchResults.length > 0 || filteredSampleAssets.length > 0) && searchTerm && (
+            <div style={{
+              position: 'absolute',
+              top: '100%',
+              left: 0,
+              right: 0,
+              backgroundColor: colors.surface,
+              border: `1px solid ${colors.border}`,
+              borderRadius: '0.5rem',
+              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+              zIndex: 50,
+              maxHeight: '300px',
+              overflowY: 'auto',
+              marginTop: '0.25rem'
+            }}>
+              {/* API Search Results */}
+              {searchResults.length > 0 && (
+                <>
+                  <div style={{ 
+                    padding: '0.5rem 0.75rem', 
+                    fontSize: '0.75rem', 
+                    fontWeight: '600', 
+                    color: colors.textSecondary,
+                    backgroundColor: colors.surfaceSecondary,
+                    borderBottom: `1px solid ${colors.border}`
+                  }}>
+                    Search Results
+                  </div>
+                  {searchResults.map((result) => (
+                    <button
+                      key={result.symbol}
+                      type="button"
+                      onClick={() => handleStockSelect(result)}
+                      style={{
+                        width: '100%',
+                        padding: '0.75rem',
+                        textAlign: 'left',
+                        border: 'none',
+                        backgroundColor: 'transparent',
+                        cursor: 'pointer',
+                        fontSize: '0.875rem',
+                        borderBottom: `1px solid ${colors.border}`,
+                        color: colors.textPrimary,
+                        transition: 'all 0.2s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = colors.surfaceSecondary
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = 'transparent'
+                      }}
+                    >
+                      <div style={{ fontWeight: '600', color: colors.textPrimary }}>
+                        {result.symbol}
+                      </div>
+                      <div style={{ fontSize: '0.75rem', color: colors.textSecondary }}>
+                        {result.name} • {result.exchange}
+                      </div>
+                      {result.price && (
+                        <div style={{ fontSize: '0.75rem', color: colors.success }}>
+                          ${result.price.toFixed(2)} {result.change && result.changePercent && (
+                            <span style={{ color: result.change >= 0 ? colors.success : colors.error }}>
+                              ({result.change >= 0 ? '+' : ''}{result.changePercent.toFixed(2)}%)
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </button>
+                  ))}
+                </>
+              )}
+              
+              {/* Sample Assets Fallback */}
+              {searchResults.length === 0 && filteredSampleAssets.length > 0 && (
+                <>
+                  <div style={{ 
+                    padding: '0.5rem 0.75rem', 
+                    fontSize: '0.75rem', 
+                    fontWeight: '600', 
+                    color: colors.textSecondary,
+                    backgroundColor: colors.surfaceSecondary,
+                    borderBottom: `1px solid ${colors.border}`
+                  }}>
+                    Popular Stocks
+                  </div>
+                  {filteredSampleAssets.map((asset) => (
+                    <button
+                      key={asset.id}
+                      type="button"
+                      onClick={() => addToWatchlist(asset)}
+                      style={{
+                        width: '100%',
+                        padding: '0.75rem',
+                        textAlign: 'left',
+                        border: 'none',
+                        backgroundColor: 'transparent',
+                        cursor: 'pointer',
+                        fontSize: '0.875rem',
+                        borderBottom: `1px solid ${colors.border}`,
+                        color: colors.textPrimary,
+                        transition: 'all 0.2s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = colors.surfaceSecondary
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = 'transparent'
+                      }}
+                    >
+                      <div style={{ fontWeight: '600', color: colors.textPrimary }}>
+                        {asset.symbol}
+                      </div>
+                      <div style={{ fontSize: '0.75rem', color: colors.textSecondary }}>
+                        {asset.name}
+                      </div>
+                      <div style={{ fontSize: '0.75rem', color: colors.success }}>
+                        ${asset.currentPrice.toFixed(2)} ({asset.changePercent24h >= 0 ? '+' : ''}{asset.changePercent24h.toFixed(2)}%)
+                      </div>
+                    </button>
+                  ))}
+                </>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -450,7 +648,7 @@ export function Watchlist({ isDarkMode = false }: WatchlistProps) {
               </div>
               
               <div style={{ maxHeight: '300px', overflow: 'auto' }}>
-                {filteredAssets.map((asset) => (
+                {filteredSampleAssets.map((asset) => (
                   <div
                     key={asset.id}
                     onClick={() => addToWatchlist(asset)}

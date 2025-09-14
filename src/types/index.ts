@@ -6,6 +6,11 @@ export interface Asset {
   currency: string;
   change24h: number;
   changePercent24h: number;
+  marketCap?: number;
+  pe?: number;
+  dividendYield?: number;
+  high52Week?: number;
+  low52Week?: number;
 }
 
 export interface Holding {

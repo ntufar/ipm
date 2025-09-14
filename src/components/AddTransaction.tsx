@@ -1,7 +1,9 @@
-import { useState, useMemo } from 'react'
-import { Plus, X, Search } from 'lucide-react'
-import type { Portfolio, Transaction } from '../types/index.js'
+import { useState, useMemo, useEffect } from 'react'
+import { Plus, X, Search, Loader2 } from 'lucide-react'
+import type { Portfolio, Transaction, Asset } from '../types/index.js'
 import { sampleAssets } from '../data/sampleData'
+import { stockSearchService, type StockSearchResult } from '../services/stockSearchService'
+import { yahooFinanceService } from '../services/yahooFinanceService'
 
 interface AddTransactionProps {
   portfolio: Portfolio
@@ -11,6 +13,9 @@ interface AddTransactionProps {
 export function AddTransaction({ portfolio, setPortfolio }: AddTransactionProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
+  const [searchResults, setSearchResults] = useState<StockSearchResult[]>([])
+  const [isSearching, setIsSearching] = useState(false)
+  const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null)
   const [formData, setFormData] = useState({
     assetId: '',
     type: 'buy' as 'buy' | 'sell',
@@ -21,15 +26,72 @@ export function AddTransaction({ portfolio, setPortfolio }: AddTransactionProps)
     notes: '',
   })
 
-  // Filter assets based on search term
-  const filteredAssets = useMemo(() => {
-    if (!searchTerm) return sampleAssets
+  // Search for stocks when search term changes
+  useEffect(() => {
+    const searchStocks = async () => {
+      if (searchTerm.length < 2) {
+        setSearchResults([])
+        return
+      }
+
+      setIsSearching(true)
+      try {
+        const results = await stockSearchService.searchStocks(searchTerm, 10)
+        setSearchResults(results)
+      } catch (error) {
+        console.error('Error searching stocks:', error)
+        setSearchResults([])
+      } finally {
+        setIsSearching(false)
+      }
+    }
+
+    const timeoutId = setTimeout(searchStocks, 300) // Debounce search
+    return () => clearTimeout(timeoutId)
+  }, [searchTerm])
+
+  // Filter sample assets as fallback
+  const filteredSampleAssets = useMemo(() => {
+    if (!searchTerm) return sampleAssets.slice(0, 5) // Show only first 5 sample assets
     
     return sampleAssets.filter(asset => 
       asset.symbol.toLowerCase().includes(searchTerm.toLowerCase()) ||
       asset.name.toLowerCase().includes(searchTerm.toLowerCase())
-    )
+    ).slice(0, 5)
   }, [searchTerm])
+
+  const handleStockSelect = async (searchResult: StockSearchResult) => {
+    try {
+      // Get current price for the selected stock
+      const quote = await yahooFinanceService.fetchQuote(searchResult.symbol)
+      
+      const newAsset: Asset = {
+        id: `asset-${Date.now()}`,
+        symbol: searchResult.symbol,
+        name: searchResult.name,
+        currentPrice: quote?.price || 0,
+        currency: searchResult.currency || 'USD',
+        change24h: quote?.change || 0,
+        changePercent24h: quote?.changePercent || 0,
+        marketCap: undefined, // Not available in search results
+        pe: undefined, // Not available in search results
+        dividendYield: undefined, // Not available in search results
+        high52Week: undefined, // Not available in search results
+        low52Week: undefined, // Not available in search results
+      }
+
+      setSelectedAsset(newAsset)
+      setFormData(prev => ({
+        ...prev,
+        assetId: newAsset.id,
+        price: newAsset.currentPrice.toString()
+      }))
+      setSearchTerm(`${searchResult.symbol} - ${searchResult.name}`)
+      setSearchResults([])
+    } catch (error) {
+      console.error('Error selecting stock:', error)
+    }
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -39,8 +101,14 @@ export function AddTransaction({ portfolio, setPortfolio }: AddTransactionProps)
       return
     }
 
-    const asset = sampleAssets.find(a => a.id === formData.assetId)
-    if (!asset) return
+    let asset: Asset
+    if (selectedAsset) {
+      asset = selectedAsset
+    } else {
+      const foundAsset = sampleAssets.find(a => a.id === formData.assetId)
+      if (!foundAsset) return
+      asset = foundAsset
+    }
 
     const quantity = parseFloat(formData.quantity)
     const price = parseFloat(formData.price)
@@ -147,7 +215,7 @@ export function AddTransaction({ portfolio, setPortfolio }: AddTransactionProps)
                 </label>
                 
                 {/* Search Input */}
-                <div style={{ position: 'relative', marginBottom: '0.5rem' }}>
+                <div style={{ position: 'relative' }}>
                   <Search size={16} style={{ 
                     position: 'absolute', 
                     left: '0.75rem', 
@@ -170,36 +238,144 @@ export function AddTransaction({ portfolio, setPortfolio }: AddTransactionProps)
                       boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)'
                     }}
                   />
+                  {isSearching && (
+                    <Loader2 size={16} style={{ 
+                      position: 'absolute', 
+                      right: '0.75rem', 
+                      top: '50%', 
+                      transform: 'translateY(-50%)', 
+                      color: '#6b7280',
+                      animation: 'spin 1s linear infinite'
+                    }} />
+                  )}
                 </div>
                 
-                <select
-                  id="assetId"
-                  name="assetId"
-                  value={formData.assetId}
-                  onChange={handleInputChange}
-                  style={{
-                    display: 'block',
-                    width: '100%',
+                {/* Search Results */}
+                {(searchResults.length > 0 || filteredSampleAssets.length > 0) && (
+                  <div style={{
+                    position: 'absolute',
+                    top: '100%',
+                    left: 0,
+                    right: 0,
+                    backgroundColor: '#ffffff',
                     border: '1px solid #d1d5db',
                     borderRadius: '0.375rem',
-                    boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
-                    fontSize: '0.875rem',
-                    padding: '0.5rem 0.75rem',
-                    maxHeight: '200px',
-                    overflowY: 'auto'
-                  }}
-                  required
-                  size={Math.min(filteredAssets.length + 1, 10)}
-                >
-                  <option value="">Select an asset ({filteredAssets.length} available)</option>
-                  {filteredAssets.map(asset => (
-                    <option key={asset.id} value={asset.id}>
-                      {asset.symbol} - {asset.name} (${asset.currentPrice.toFixed(2)})
-                    </option>
-                  ))}
-                </select>
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                    zIndex: 50,
+                    maxHeight: '300px',
+                    overflowY: 'auto',
+                    marginTop: '0.25rem'
+                  }}>
+                    {/* API Search Results */}
+                    {searchResults.length > 0 && (
+                      <>
+                        <div style={{ 
+                          padding: '0.5rem 0.75rem', 
+                          fontSize: '0.75rem', 
+                          fontWeight: '600', 
+                          color: '#6b7280',
+                          backgroundColor: '#f9fafb',
+                          borderBottom: '1px solid #e5e7eb'
+                        }}>
+                          Search Results
+                        </div>
+                        {searchResults.map((result) => (
+                          <button
+                            key={result.symbol}
+                            type="button"
+                            onClick={() => handleStockSelect(result)}
+                            style={{
+                              width: '100%',
+                              padding: '0.75rem',
+                              textAlign: 'left',
+                              border: 'none',
+                              backgroundColor: 'transparent',
+                              cursor: 'pointer',
+                              fontSize: '0.875rem',
+                              borderBottom: '1px solid #f3f4f6'
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.backgroundColor = '#f9fafb'
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.backgroundColor = 'transparent'
+                            }}
+                          >
+                            <div style={{ fontWeight: '600', color: '#111827' }}>
+                              {result.symbol}
+                            </div>
+                            <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>
+                              {result.name} • {result.exchange}
+                            </div>
+                            {result.price && (
+                              <div style={{ fontSize: '0.75rem', color: '#059669' }}>
+                                ${result.price.toFixed(2)} {result.change && result.changePercent && (
+                                  <span style={{ color: result.change >= 0 ? '#059669' : '#dc2626' }}>
+                                    ({result.change >= 0 ? '+' : ''}{result.changePercent.toFixed(2)}%)
+                                  </span>
+                                )}
+                              </div>
+                            )}
+                          </button>
+                        ))}
+                      </>
+                    )}
+                    
+                    {/* Sample Assets Fallback */}
+                    {searchResults.length === 0 && filteredSampleAssets.length > 0 && (
+                      <>
+                        <div style={{ 
+                          padding: '0.5rem 0.75rem', 
+                          fontSize: '0.75rem', 
+                          fontWeight: '600', 
+                          color: '#6b7280',
+                          backgroundColor: '#f9fafb',
+                          borderBottom: '1px solid #e5e7eb'
+                        }}>
+                          Popular Stocks
+                        </div>
+                        {filteredSampleAssets.map((asset) => (
+                          <button
+                            key={asset.id}
+                            type="button"
+                            onClick={() => {
+                              setFormData(prev => ({ ...prev, assetId: asset.id, price: asset.currentPrice.toString() }))
+                              setSearchTerm(`${asset.symbol} - ${asset.name}`)
+                            }}
+                            style={{
+                              width: '100%',
+                              padding: '0.75rem',
+                              textAlign: 'left',
+                              border: 'none',
+                              backgroundColor: 'transparent',
+                              cursor: 'pointer',
+                              fontSize: '0.875rem',
+                              borderBottom: '1px solid #f3f4f6'
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.backgroundColor = '#f9fafb'
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.backgroundColor = 'transparent'
+                            }}
+                          >
+                            <div style={{ fontWeight: '600', color: '#111827' }}>
+                              {asset.symbol}
+                            </div>
+                            <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>
+                              {asset.name}
+                            </div>
+                            <div style={{ fontSize: '0.75rem', color: '#059669' }}>
+                              ${asset.currentPrice.toFixed(2)} ({asset.changePercent24h >= 0 ? '+' : ''}{asset.changePercent24h.toFixed(2)}%)
+                            </div>
+                          </button>
+                        ))}
+                      </>
+                    )}
+                  </div>
+                )}
                 
-                {filteredAssets.length === 0 && searchTerm && (
+                {searchResults.length === 0 && filteredSampleAssets.length === 0 && searchTerm && !isSearching && (
                   <p style={{ 
                     fontSize: '0.75rem', 
                     color: '#6b7280', 
