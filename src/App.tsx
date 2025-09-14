@@ -23,7 +23,6 @@ import { ThemeToggle } from './components/ThemeToggle'
 import { ThemeProvider, useTheme } from './contexts/ThemeContext'
 import { samplePortfolio } from './data/sampleData'
 import type { Portfolio, Holding } from './types/index.js'
-import { loadPortfolio, savePortfolio } from './utils/storage'
 import { yahooFinanceService } from './services/yahooFinanceService'
 import { getThemeColors, getThemeStyles } from './utils/theme'
 // import { getResponsiveSpacing, getResponsiveGrid, getTouchButton } from './utils/responsive'
@@ -77,6 +76,44 @@ function AppContent() {
       savePortfolio(portfolio)
     }
   }, [portfolio])
+
+  // Helper functions for localStorage
+  const loadPortfolio = (): Portfolio | null => {
+    try {
+      const saved = localStorage.getItem('portfolio')
+      if (saved) {
+        const parsed = JSON.parse(saved)
+        // Convert date strings back to Date objects
+        if (parsed.lastUpdated) {
+          parsed.lastUpdated = new Date(parsed.lastUpdated)
+        }
+        if (parsed.transactions) {
+          parsed.transactions = parsed.transactions.map((t: any) => ({
+            ...t,
+            date: new Date(t.date)
+          }))
+        }
+        if (parsed.holdings) {
+          parsed.holdings = parsed.holdings.map((h: any) => ({
+            ...h,
+            purchaseDate: new Date(h.purchaseDate)
+          }))
+        }
+        return parsed
+      }
+    } catch (error) {
+      console.error('Error loading portfolio from localStorage:', error)
+    }
+    return null
+  }
+
+  const savePortfolio = (portfolio: Portfolio): void => {
+    try {
+      localStorage.setItem('portfolio', JSON.stringify(portfolio))
+    } catch (error) {
+      console.error('Error saving portfolio to localStorage:', error)
+    }
+  }
 
   // Update stock prices periodically
   useEffect(() => {
@@ -173,7 +210,12 @@ function AppContent() {
   }
 
   const handleDeleteHolding = (holdingId: string) => {
+    console.log('Deleting holding with ID:', holdingId)
+    console.log('Current holdings count:', portfolio.holdings.length)
+    
     const updatedHoldings = portfolio.holdings.filter(holding => holding.id !== holdingId)
+    
+    console.log('Updated holdings count:', updatedHoldings.length)
     
     // Recalculate portfolio totals
     const totalValue = updatedHoldings.reduce((sum, holding) => sum + holding.currentValue, 0)
@@ -191,6 +233,7 @@ function AppContent() {
       lastUpdated: new Date()
     }
     
+    console.log('Updated portfolio:', updatedPortfolio)
     setPortfolio(updatedPortfolio)
   }
 

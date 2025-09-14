@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react'
 import { Plus, X, Search, Loader2 } from 'lucide-react'
-import type { Portfolio, Transaction, Asset } from '../types/index.js'
+import type { Portfolio, Transaction, Asset, Holding } from '../types/index.js'
 import { sampleAssets } from '../data/sampleData'
 import { stockSearchService, type StockSearchResult } from '../services/stockSearchService'
 import { yahooFinanceService } from '../services/yahooFinanceService'
@@ -130,11 +130,81 @@ export function AddTransaction({ portfolio, setPortfolio }: AddTransactionProps)
     // Update portfolio with new transaction
     const updatedTransactions = [...portfolio.transactions, newTransaction]
     
-    // For simplicity, we'll just add the transaction without updating holdings
-    // In a real app, you'd recalculate holdings based on transactions
+    // Convert transaction to holdings
+    const updatedHoldings = [...portfolio.holdings]
+    const existingHoldingIndex = updatedHoldings.findIndex(
+      holding => holding.asset.symbol === asset.symbol
+    )
+    
+    if (existingHoldingIndex >= 0) {
+      // Update existing holding
+      const existingHolding = updatedHoldings[existingHoldingIndex]
+      const newQuantity = formData.type === 'buy' 
+        ? existingHolding.quantity + quantity
+        : existingHolding.quantity - quantity
+      
+      if (newQuantity <= 0) {
+        // Remove holding if quantity becomes zero or negative
+        updatedHoldings.splice(existingHoldingIndex, 1)
+      } else {
+        // Update holding
+        const newTotalCost = formData.type === 'buy'
+          ? existingHolding.totalCost + totalAmount + fees
+          : existingHolding.totalCost - (quantity * existingHolding.averagePrice)
+        
+        const newAveragePrice = newTotalCost / newQuantity
+        const currentValue = newQuantity * asset.currentPrice
+        const gainLoss = currentValue - newTotalCost
+        const gainLossPercent = (gainLoss / newTotalCost) * 100
+        
+        updatedHoldings[existingHoldingIndex] = {
+          ...existingHolding,
+          quantity: newQuantity,
+          averagePrice: newAveragePrice,
+          totalCost: newTotalCost,
+          currentValue,
+          gainLoss,
+          gainLossPercent
+        }
+      }
+    } else if (formData.type === 'buy') {
+      // Add new holding
+      const totalCost = totalAmount + fees
+      const currentValue = quantity * asset.currentPrice
+      const gainLoss = currentValue - totalCost
+      const gainLossPercent = (gainLoss / totalCost) * 100
+      
+      const newHolding: Holding = {
+        id: `holding-${Date.now()}`,
+        asset,
+        quantity,
+        averagePrice: price + (fees / quantity),
+        purchasePrice: price,
+        purchaseDate: new Date(formData.date),
+        totalCost,
+        currentValue,
+        gainLoss,
+        gainLossPercent,
+        notes: formData.notes
+      }
+      
+      updatedHoldings.push(newHolding)
+    }
+    
+    // Recalculate portfolio totals
+    const totalValue = updatedHoldings.reduce((sum, holding) => sum + holding.currentValue, 0)
+    const totalCost = updatedHoldings.reduce((sum, holding) => sum + holding.totalCost, 0)
+    const totalGainLoss = totalValue - totalCost
+    const totalGainLossPercent = (totalCost > 0) ? (totalGainLoss / totalCost) * 100 : 0
+    
     const updatedPortfolio: Portfolio = {
       ...portfolio,
       transactions: updatedTransactions,
+      holdings: updatedHoldings,
+      totalValue,
+      totalCost,
+      totalGainLoss,
+      totalGainLossPercent,
       lastUpdated: new Date(),
     }
 
