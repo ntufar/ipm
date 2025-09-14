@@ -24,7 +24,7 @@ import { ThemeProvider, useTheme } from './contexts/ThemeContext'
 import { samplePortfolio } from './data/sampleData'
 import type { Portfolio, Holding } from './types/index.js'
 import { loadPortfolio, savePortfolio } from './utils/storage'
-import { fetchMultipleStockPrices } from './services/stockService'
+import { yahooFinanceService } from './services/yahooFinanceService'
 import { getThemeColors, getThemeStyles } from './utils/theme'
 // import { getResponsiveSpacing, getResponsiveGrid, getTouchButton } from './utils/responsive'
 import { useKeyboardShortcuts, createPortfolioShortcuts } from './hooks/useKeyboardShortcuts'
@@ -63,7 +63,8 @@ function AppContent() {
       setIsLoading(true)
       try {
         const symbols = portfolio.holdings.map(holding => holding.asset.symbol)
-        const stockQuotes = await fetchMultipleStockPrices(symbols)
+        // Use Yahoo Finance service for real data
+        const stockQuotes = await yahooFinanceService.fetchMultipleQuotes(symbols)
         
         // Update portfolio with new prices
         const updatedHoldings = portfolio.holdings.map(holding => {
@@ -178,7 +179,8 @@ function AppContent() {
     try {
       const symbols = portfolio.holdings.map(holding => holding.asset.symbol)
       if (symbols.length > 0) {
-        const quotes = await fetchMultipleStockPrices(symbols)
+        // Use Yahoo Finance service for real data
+        const quotes = await yahooFinanceService.fetchMultipleQuotes(symbols)
         const updatedHoldings = portfolio.holdings.map(holding => {
           const quote = quotes.find(q => q.symbol === holding.asset.symbol)
           if (quote) {
@@ -236,7 +238,8 @@ function AppContent() {
     if (symbols.length > 0) {
       setIsLoading(true)
       try {
-        const quotes = await fetchMultipleStockPrices(symbols)
+        // Use Yahoo Finance service for real data
+        const quotes = await yahooFinanceService.fetchMultipleQuotes(symbols)
         
         // Update portfolio with new prices
         const updatedHoldings = portfolio.holdings.map(holding => {

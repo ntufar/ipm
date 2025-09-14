@@ -11,11 +11,5 @@ export default defineConfig({
     hmr: {
       overlay: false
     }
-  },
-  define: {
-    global: 'globalThis',
-  },
-  optimizeDeps: {
-    include: ['yahoo-finance2']
   }
 })
