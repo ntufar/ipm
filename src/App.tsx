@@ -8,6 +8,9 @@ import { PortfolioAnalytics } from './components/PortfolioAnalytics'
 import { PortfolioComparison } from './components/PortfolioComparison'
 import { AdvancedCharts } from './components/AdvancedCharts'
 import { AdditionalData } from './components/AdditionalData'
+import { AdvancedAnalytics } from './components/AdvancedAnalytics'
+import { Watchlist } from './components/Watchlist'
+import { Notifications } from './components/Notifications'
 import { VirtualHoldingsList } from './components/VirtualHoldingsList'
 import { MemoizedPerformanceChart } from './components/MemoizedPerformanceChart'
 import { ThemeToggle } from './components/ThemeToggle'
@@ -30,7 +33,7 @@ function AppContent() {
   const themeStyles = getThemeStyles(isDarkMode)
   
   const [portfolio, setPortfolio] = useState<Portfolio>(samplePortfolio)
-  const [activeTab, setActiveTab] = useState<'overview' | 'holdings' | 'transactions' | 'analytics'>('overview')
+  const [activeTab, setActiveTab] = useState<'overview' | 'holdings' | 'transactions' | 'analytics' | 'watchlist'>('overview')
   const [isLoading, setIsLoading] = useState(false)
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date())
   // const [showAddTransaction, setShowAddTransaction] = useState(false)
@@ -371,7 +374,8 @@ function AppContent() {
               { id: 'overview', label: 'Overview' },
               { id: 'holdings', label: 'Holdings' },
               { id: 'transactions', label: 'Transactions' },
-              { id: 'analytics', label: 'Analytics' }
+              { id: 'analytics', label: 'Analytics' },
+              { id: 'watchlist', label: 'Watchlist' }
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -443,10 +447,18 @@ function AppContent() {
         
         {activeTab === 'analytics' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+            <AdvancedAnalytics portfolio={portfolio} isDarkMode={isDarkMode} />
             <PortfolioAnalytics portfolio={portfolio} />
             <PortfolioComparison portfolio={portfolio} isDarkMode={isDarkMode} />
             <AdvancedCharts portfolio={portfolio} isDarkMode={isDarkMode} />
             <AdditionalData portfolio={portfolio} isDarkMode={isDarkMode} />
+          </div>
+        )}
+        
+        {activeTab === 'watchlist' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+            <Watchlist isDarkMode={isDarkMode} />
+            <Notifications portfolio={portfolio} isDarkMode={isDarkMode} />
           </div>
         )}
       </main>
