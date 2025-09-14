@@ -1,5 +1,5 @@
 import { TrendingUp, TrendingDown, DollarSign, Percent } from 'lucide-react'
-import { Portfolio } from '../types'
+import { Portfolio } from '../types/index'
 import { formatCurrency, formatPercent } from '../utils/calculations'
 
 interface PortfolioOverviewProps {

@@ -1,5 +1,5 @@
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
-import { Portfolio } from '../types'
+import { Portfolio } from '../types/index'
 import { generatePerformanceData } from '../utils/calculations'
 
 interface PerformanceChartProps {

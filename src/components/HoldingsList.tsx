@@ -1,5 +1,5 @@
 import { TrendingUp, TrendingDown } from 'lucide-react'
-import { Holding } from '../types'
+import { Holding } from '../types/index'
 import { formatCurrency, formatPercent } from '../utils/calculations'
 
 interface HoldingsListProps {

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Plus, X } from 'lucide-react'
-import { Portfolio, Transaction, Asset } from '../types'
+import { Portfolio, Transaction, Asset } from '../types/index'
 import { sampleAssets } from '../data/sampleData'
 
 interface AddTransactionProps {
