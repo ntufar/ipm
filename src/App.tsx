@@ -213,9 +213,25 @@ function AppContent() {
     console.log('Deleting holding with ID:', holdingId)
     console.log('Current holdings count:', portfolio.holdings.length)
     
+    // Find the holding to get its asset symbol
+    const holdingToDelete = portfolio.holdings.find(holding => holding.id === holdingId)
+    if (!holdingToDelete) {
+      console.log('Holding not found')
+      return
+    }
+    
+    const assetSymbol = holdingToDelete.asset.symbol
+    console.log('Asset symbol to remove:', assetSymbol)
+    
+    // Remove the holding
     const updatedHoldings = portfolio.holdings.filter(holding => holding.id !== holdingId)
     
+    // Remove all transactions for this asset
+    const updatedTransactions = portfolio.transactions.filter(transaction => transaction.asset.symbol !== assetSymbol)
+    
     console.log('Updated holdings count:', updatedHoldings.length)
+    console.log('Updated transactions count:', updatedTransactions.length)
+    console.log('Removed transactions for asset:', assetSymbol)
     
     // Recalculate portfolio totals
     const totalValue = updatedHoldings.reduce((sum, holding) => sum + holding.currentValue, 0)
@@ -226,6 +242,7 @@ function AppContent() {
     const updatedPortfolio: Portfolio = {
       ...portfolio,
       holdings: updatedHoldings,
+      transactions: updatedTransactions,
       totalValue,
       totalCost,
       totalGainLoss,
