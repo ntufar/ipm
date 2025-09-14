@@ -1,5 +1,5 @@
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
-import { Portfolio } from '../types/index.js'
+import type { Portfolio } from '../types/index.js'
 import { generatePerformanceData } from '../utils/calculations'
 
 interface PerformanceChartProps {
@@ -68,3 +68,4 @@ export function PerformanceChart({ portfolio }: PerformanceChartProps) {
     </div>
   )
 }
+

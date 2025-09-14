@@ -1,5 +1,5 @@
 import { TrendingUp, TrendingDown } from 'lucide-react'
-import { Holding } from '../types/index.js'
+import type { Holding } from '../types/index.js'
 import { formatCurrency, formatPercent } from '../utils/calculations'
 
 interface HoldingsListProps {
@@ -184,3 +184,4 @@ export function HoldingsList({ holdings }: HoldingsListProps) {
     </div>
   )
 }
+

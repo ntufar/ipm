@@ -1,6 +1,6 @@
-import { useState } from 'react'
-import { Plus, X } from 'lucide-react'
-import { Portfolio, Transaction, Asset } from '../types/index.js'
+import { useState, useMemo } from 'react'
+import { Plus, X, Search } from 'lucide-react'
+import type { Portfolio, Transaction } from '../types/index.js'
 import { sampleAssets } from '../data/sampleData'
 
 interface AddTransactionProps {
@@ -10,6 +10,7 @@ interface AddTransactionProps {
 
 export function AddTransaction({ portfolio, setPortfolio }: AddTransactionProps) {
   const [isOpen, setIsOpen] = useState(false)
+  const [searchTerm, setSearchTerm] = useState('')
   const [formData, setFormData] = useState({
     assetId: '',
     type: 'buy' as 'buy' | 'sell',
@@ -19,6 +20,16 @@ export function AddTransaction({ portfolio, setPortfolio }: AddTransactionProps)
     fees: '',
     notes: '',
   })
+
+  // Filter assets based on search term
+  const filteredAssets = useMemo(() => {
+    if (!searchTerm) return sampleAssets
+    
+    return sampleAssets.filter(asset => 
+      asset.symbol.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      asset.name.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+  }, [searchTerm])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -71,7 +82,7 @@ export function AddTransaction({ portfolio, setPortfolio }: AddTransactionProps)
       fees: '',
       notes: '',
     })
-    
+    setSearchTerm('')
     setIsOpen(false)
   }
 
@@ -134,30 +145,69 @@ export function AddTransaction({ portfolio, setPortfolio }: AddTransactionProps)
                 }}>
                   Asset *
                 </label>
+                
+                {/* Search Input */}
+                <div style={{ position: 'relative', marginBottom: '0.5rem' }}>
+                  <Search size={16} style={{ 
+                    position: 'absolute', 
+                    left: '0.75rem', 
+                    top: '50%', 
+                    transform: 'translateY(-50%)', 
+                    color: '#6b7280' 
+                  }} />
+                  <input
+                    type="text"
+                    placeholder="Search stocks by symbol or name..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '0.5rem 0.75rem 0.5rem 2.5rem',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '0.375rem',
+                      fontSize: '0.875rem',
+                      outline: 'none',
+                      boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)'
+                    }}
+                  />
+                </div>
+                
                 <select
                   id="assetId"
                   name="assetId"
                   value={formData.assetId}
                   onChange={handleInputChange}
                   style={{
-                    marginTop: '0.25rem',
                     display: 'block',
                     width: '100%',
                     border: '1px solid #d1d5db',
                     borderRadius: '0.375rem',
                     boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
                     fontSize: '0.875rem',
-                    padding: '0.5rem 0.75rem'
+                    padding: '0.5rem 0.75rem',
+                    maxHeight: '200px',
+                    overflowY: 'auto'
                   }}
                   required
+                  size={Math.min(filteredAssets.length + 1, 10)}
                 >
-                  <option value="">Select an asset</option>
-                  {sampleAssets.map(asset => (
+                  <option value="">Select an asset ({filteredAssets.length} available)</option>
+                  {filteredAssets.map(asset => (
                     <option key={asset.id} value={asset.id}>
-                      {asset.symbol} - {asset.name}
+                      {asset.symbol} - {asset.name} (${asset.currentPrice.toFixed(2)})
                     </option>
                   ))}
                 </select>
+                
+                {filteredAssets.length === 0 && searchTerm && (
+                  <p style={{ 
+                    fontSize: '0.75rem', 
+                    color: '#6b7280', 
+                    margin: '0.25rem 0 0 0' 
+                  }}>
+                    No stocks found matching "{searchTerm}"
+                  </p>
+                )}
               </div>
 
               <div>
@@ -350,7 +400,10 @@ export function AddTransaction({ portfolio, setPortfolio }: AddTransactionProps)
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
               <button
                 type="button"
-                onClick={() => setIsOpen(false)}
+                onClick={() => {
+                  setIsOpen(false)
+                  setSearchTerm('')
+                }}
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
@@ -392,3 +445,4 @@ export function AddTransaction({ portfolio, setPortfolio }: AddTransactionProps)
     </div>
   )
 }
+
