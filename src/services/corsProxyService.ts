@@ -9,9 +9,9 @@ export interface ProxyConfig {
 
 const PROXY_OPTIONS: ProxyConfig[] = [
   {
-    name: 'allorigins',
-    url: 'https://api.allorigins.win/raw?url=',
-    requiresEncoding: true
+    name: 'thingproxy',
+    url: 'https://thingproxy.freeboard.io/fetch/',
+    requiresEncoding: false
   },
   {
     name: 'cors-anywhere',
@@ -19,17 +19,28 @@ const PROXY_OPTIONS: ProxyConfig[] = [
     requiresEncoding: false
   },
   {
-    name: 'thingproxy',
-    url: 'https://thingproxy.freeboard.io/fetch/',
-    requiresEncoding: false
+    name: 'allorigins',
+    url: 'https://api.allorigins.win/raw?url=',
+    requiresEncoding: true
   }
 ]
 
 class CORSProxyService {
   private currentProxyIndex = 0
   private failedProxies = new Set<string>()
+  private lastRequestTime = 0
+  private readonly RATE_LIMIT_DELAY = 1000 // 1 second between requests
 
   public async fetchWithProxy(targetUrl: string, options?: RequestInit): Promise<Response> {
+    // Rate limiting
+    const now = Date.now()
+    const timeSinceLastRequest = now - this.lastRequestTime
+    
+    if (timeSinceLastRequest < this.RATE_LIMIT_DELAY) {
+      await new Promise(resolve => setTimeout(resolve, this.RATE_LIMIT_DELAY - timeSinceLastRequest))
+    }
+    
+    this.lastRequestTime = Date.now()
     const proxy = this.getCurrentProxy()
     
     try {
@@ -47,6 +58,11 @@ class CORSProxyService {
       })
       
       if (!response.ok) {
+        if (response.status === 429) {
+          console.warn(`Proxy ${proxy.name} rate limited (429), trying next proxy`)
+          this.failedProxies.add(proxy.name)
+          return this.tryNextProxy(targetUrl, options)
+        }
         throw new Error(`Proxy ${proxy.name} failed with status: ${response.status}`)
       }
       
@@ -75,6 +91,13 @@ class CORSProxyService {
     
     if (this.currentProxyIndex >= PROXY_OPTIONS.length) {
       this.currentProxyIndex = 0
+    }
+    
+    // If all proxies have failed, wait a bit and reset
+    if (this.failedProxies.size >= PROXY_OPTIONS.length) {
+      console.warn('All proxies failed, waiting 5 seconds before retry...')
+      await new Promise(resolve => setTimeout(resolve, 5000))
+      this.failedProxies.clear()
     }
     
     return this.fetchWithProxy(targetUrl, options)
