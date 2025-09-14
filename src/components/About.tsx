@@ -422,7 +422,7 @@ export function About({ isDarkMode = false }: AboutProps) {
           margin: '0.5rem 0 0 0',
           fontSize: '0.75rem'
         }}>
-          © 2024 Investment Portfolio Manager. All rights reserved.
+          © 2025 Nicolai Tufar. All rights reserved.
         </p>
       </div>
     </div>
