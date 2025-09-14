@@ -1,4 +1,4 @@
-import { Portfolio, Asset, Holding, Transaction } from '../types/index';
+import { Portfolio, Asset, Holding, Transaction } from '../types';
 
 export const sampleAssets: Asset[] = [
   {
