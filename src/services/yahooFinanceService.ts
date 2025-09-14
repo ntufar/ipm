@@ -1,5 +1,7 @@
 // Yahoo Finance API Service (Free, no API key required)
-// Uses direct API calls to avoid browser compatibility issues
+// Uses CORS proxy to handle cross-origin requests
+
+import { corsProxyService } from './corsProxyService'
 
 export interface YahooQuote {
   symbol: string
@@ -30,10 +32,8 @@ class YahooFinanceService {
 
   public async fetchQuote(symbol: string): Promise<YahooQuote | null> {
     try {
-      // Direct API call to Yahoo Finance
-      const response = await fetch(
-        `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1m&range=1d`
-      )
+      const yahooUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1m&range=1d`
+      const response = await corsProxyService.fetchWithProxy(yahooUrl)
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)

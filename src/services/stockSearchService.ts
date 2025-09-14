@@ -2,6 +2,8 @@
 // Primary: Yahoo Finance search
 // Fallback: Alpha Vantage search
 
+import { corsProxyService } from './corsProxyService'
+
 export interface StockSearchResult {
   symbol: string
   name: string
@@ -49,10 +51,8 @@ class StockSearchService {
 
   private async searchYahooFinance(query: string, limit: number): Promise<StockSearchResult[]> {
     try {
-      // Yahoo Finance search endpoint
-      const response = await fetch(
-        `https://query1.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(query)}&quotesCount=${limit}&newsCount=0`
-      )
+      const yahooUrl = `https://query1.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(query)}&quotesCount=${limit}&newsCount=0`
+      const response = await corsProxyService.fetchWithProxy(yahooUrl)
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
@@ -94,10 +94,8 @@ class StockSearchService {
 
   public async getStockDetails(symbol: string): Promise<StockSearchResult | null> {
     try {
-      // Get detailed stock information
-      const response = await fetch(
-        `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1m&range=1d`
-      )
+      const yahooUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1m&range=1d`
+      const response = await corsProxyService.fetchWithProxy(yahooUrl)
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
