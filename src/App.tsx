@@ -1,17 +1,27 @@
 import { useState, useEffect } from 'react'
 import { PortfolioOverview } from './components/PortfolioOverview'
-import { HoldingsList } from './components/HoldingsList'
-import { PerformanceChart } from './components/PerformanceChart'
+// import { HoldingsList } from './components/HoldingsList'
+// import { PerformanceChart } from './components/PerformanceChart'
 import { AddTransaction } from './components/AddTransaction'
 import { TransactionHistory } from './components/TransactionHistory'
 import { PortfolioAnalytics } from './components/PortfolioAnalytics'
+import { PortfolioComparison } from './components/PortfolioComparison'
+import { AdvancedCharts } from './components/AdvancedCharts'
+import { AdditionalData } from './components/AdditionalData'
+import { VirtualHoldingsList } from './components/VirtualHoldingsList'
+import { MemoizedPerformanceChart } from './components/MemoizedPerformanceChart'
 import { ThemeToggle } from './components/ThemeToggle'
+// import { MobileNavigation } from './components/MobileNavigation'
+// import { ErrorBoundary } from './components/ErrorBoundary'
+// import { CardSkeleton, ChartSkeleton } from './components/LoadingSkeleton'
 import { ThemeProvider, useTheme } from './contexts/ThemeContext'
 import { samplePortfolio } from './data/sampleData'
 import type { Portfolio } from './types/index.js'
 import { loadPortfolio, savePortfolio } from './utils/storage'
 import { fetchMultipleStockPrices } from './services/stockService'
 import { getThemeColors, getThemeStyles } from './utils/theme'
+// import { getResponsiveSpacing, getResponsiveGrid, getTouchButton } from './utils/responsive'
+import { useKeyboardShortcuts, createPortfolioShortcuts } from './hooks/useKeyboardShortcuts'
 import './App.css'
 
 function AppContent() {
@@ -23,6 +33,7 @@ function AppContent() {
   const [activeTab, setActiveTab] = useState<'overview' | 'holdings' | 'transactions' | 'analytics'>('overview')
   const [isLoading, setIsLoading] = useState(false)
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date())
+  // const [showAddTransaction, setShowAddTransaction] = useState(false)
 
   // Load portfolio from localStorage on app start
   useEffect(() => {
@@ -109,6 +120,65 @@ function AppContent() {
     setPortfolio(updatedPortfolio)
   }
 
+  // Keyboard shortcuts
+  const refreshData = async () => {
+    setIsLoading(true)
+    try {
+      const symbols = portfolio.holdings.map(holding => holding.asset.symbol)
+      if (symbols.length > 0) {
+        const quotes = await fetchMultipleStockPrices(symbols)
+        const updatedHoldings = portfolio.holdings.map(holding => {
+          const quote = quotes.find(q => q.symbol === holding.asset.symbol)
+          if (quote) {
+            const updatedAsset = {
+              ...holding.asset,
+              currentPrice: quote.price,
+              change24h: quote.change,
+              changePercent24h: quote.changePercent,
+            }
+            const currentValue = holding.quantity * quote.price
+            const gainLoss = currentValue - holding.totalCost
+            const gainLossPercent = (holding.totalCost > 0) ? (gainLoss / holding.totalCost) * 100 : 0
+            return {
+              ...holding,
+              asset: updatedAsset,
+              currentValue,
+              gainLoss,
+              gainLossPercent,
+            }
+          }
+          return holding
+        })
+        const totalValue = updatedHoldings.reduce((sum, holding) => sum + holding.currentValue, 0)
+        const totalCost = updatedHoldings.reduce((sum, holding) => sum + holding.totalCost, 0)
+        const totalGainLoss = totalValue - totalCost
+        const totalGainLossPercent = (totalCost > 0) ? (totalGainLoss / totalCost) * 100 : 0
+        setPortfolio({
+          ...portfolio,
+          holdings: updatedHoldings,
+          totalValue,
+          totalCost,
+          totalGainLoss,
+          totalGainLossPercent,
+          lastUpdated: new Date(),
+        })
+        setLastUpdated(new Date())
+      }
+    } catch (error) {
+      console.error('Failed to refresh data:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const shortcuts = createPortfolioShortcuts(
+    setActiveTab,
+    refreshData,
+    () => console.log('Add transaction shortcut pressed')
+  )
+
+  useKeyboardShortcuts({ shortcuts })
+
   const handleRefreshPrices = async () => {
     const symbols = portfolio.holdings.map(holding => holding.asset.symbol)
     if (symbols.length > 0) {
@@ -178,7 +248,7 @@ function AppContent() {
       }}>
         <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 1rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.5rem 0' }}>
-            <div>
+      <div>
               <h1 style={{ 
                 fontSize: '1.875rem', 
                 fontWeight: 'bold', 
@@ -194,8 +264,8 @@ function AppContent() {
                 transition: 'color 0.3s ease'
               }}>
                 Track and manage your investments
-              </p>
-            </div>
+        </p>
+      </div>
             
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
               <ThemeToggle />
@@ -285,12 +355,12 @@ function AppContent() {
         {activeTab === 'overview' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
             <PortfolioOverview portfolio={portfolio} />
-            <PerformanceChart portfolio={portfolio} />
+            <MemoizedPerformanceChart portfolio={portfolio} isDarkMode={isDarkMode} />
           </div>
         )}
         
         {activeTab === 'holdings' && (
-          <HoldingsList holdings={portfolio.holdings} />
+          <VirtualHoldingsList holdings={portfolio.holdings} isDarkMode={isDarkMode} />
         )}
         
         {activeTab === 'transactions' && (
@@ -321,7 +391,12 @@ function AppContent() {
         )}
         
         {activeTab === 'analytics' && (
-          <PortfolioAnalytics portfolio={portfolio} />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+            <PortfolioAnalytics portfolio={portfolio} />
+            <PortfolioComparison portfolio={portfolio} isDarkMode={isDarkMode} />
+            <AdvancedCharts portfolio={portfolio} isDarkMode={isDarkMode} />
+            <AdditionalData portfolio={portfolio} isDarkMode={isDarkMode} />
+          </div>
         )}
       </main>
     </div>
