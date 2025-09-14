@@ -50,6 +50,27 @@ function AppContent() {
     }
   }, [])
 
+  // Update document title based on active tab
+  useEffect(() => {
+    const tabTitles = {
+      'overview': 'Overview',
+      'holdings': 'Holdings',
+      'transactions': 'Transactions',
+      'analytics': 'Analytics',
+      'watchlist': 'Watchlist',
+      'market': 'Market Data'
+    }
+    
+    const baseTitle = 'Investment Portfolio Manager'
+    const tabTitle = tabTitles[activeTab] || 'Overview'
+    document.title = `${tabTitle} | ${baseTitle}`
+    
+    // Reset to base title when component unmounts
+    return () => {
+      document.title = baseTitle
+    }
+  }, [activeTab])
+
   // Save portfolio to localStorage whenever it changes
   useEffect(() => {
     if (portfolio !== samplePortfolio) {
