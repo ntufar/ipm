@@ -215,13 +215,14 @@ export function AddTransaction({ portfolio, setPortfolio }: AddTransactionProps)
                 </label>
                 
                 {/* Search Input */}
-                <div style={{ position: 'relative' }}>
+                <div style={{ position: 'relative', width: '100%' }}>
                   <Search size={16} style={{ 
                     position: 'absolute', 
                     left: '0.75rem', 
                     top: '50%', 
                     transform: 'translateY(-50%)', 
-                    color: '#6b7280' 
+                    color: '#6b7280',
+                    zIndex: 1
                   }} />
                   <input
                     type="text"
@@ -235,7 +236,9 @@ export function AddTransaction({ portfolio, setPortfolio }: AddTransactionProps)
                       borderRadius: '0.375rem',
                       fontSize: '0.875rem',
                       outline: 'none',
-                      boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)'
+                      boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+                      position: 'relative',
+                      zIndex: 1
                     }}
                   />
                   {isSearching && (
@@ -245,26 +248,26 @@ export function AddTransaction({ portfolio, setPortfolio }: AddTransactionProps)
                       top: '50%', 
                       transform: 'translateY(-50%)', 
                       color: '#6b7280',
-                      animation: 'spin 1s linear infinite'
+                      animation: 'spin 1s linear infinite',
+                      zIndex: 1
                     }} />
                   )}
-                </div>
                 
                 {/* Search Results */}
                 {(searchResults.length > 0 || filteredSampleAssets.length > 0) && (
                   <div style={{
                     position: 'absolute',
-                    top: '100%',
+                    top: 'calc(100% + 0.25rem)',
                     left: 0,
                     right: 0,
                     backgroundColor: '#ffffff',
                     border: '1px solid #d1d5db',
                     borderRadius: '0.375rem',
                     boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                    zIndex: 50,
+                    zIndex: 1000,
                     maxHeight: '300px',
                     overflowY: 'auto',
-                    marginTop: '0.25rem'
+                    marginTop: '0'
                   }}>
                     {/* API Search Results */}
                     {searchResults.length > 0 && (
@@ -384,6 +387,7 @@ export function AddTransaction({ portfolio, setPortfolio }: AddTransactionProps)
                     No stocks found matching "{searchTerm}"
                   </p>
                 )}
+                </div>
               </div>
 
               <div>

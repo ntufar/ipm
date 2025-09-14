@@ -214,7 +214,7 @@ export function Watchlist({ isDarkMode = false }: WatchlistProps) {
         borderBottom: `1px solid ${colors.border}`,
         transition: 'all 0.3s ease'
       }}>
-        <div style={{ position: 'relative' }}>
+        <div style={{ position: 'relative', width: '100%' }}>
           <Search 
             size={20} 
             style={{ 
@@ -222,7 +222,8 @@ export function Watchlist({ isDarkMode = false }: WatchlistProps) {
               left: '0.75rem', 
               top: '50%', 
               transform: 'translateY(-50%)',
-              color: colors.textSecondary
+              color: colors.textSecondary,
+              zIndex: 1
             }} 
           />
           {isSearching && (
@@ -234,7 +235,8 @@ export function Watchlist({ isDarkMode = false }: WatchlistProps) {
                 top: '50%', 
                 transform: 'translateY(-50%)',
                 color: colors.textSecondary,
-                animation: 'spin 1s linear infinite'
+                animation: 'spin 1s linear infinite',
+                zIndex: 1
               }} 
             />
           )}
@@ -248,7 +250,9 @@ export function Watchlist({ isDarkMode = false }: WatchlistProps) {
               width: '100%',
               paddingLeft: '2.5rem',
               paddingRight: isSearching ? '2.5rem' : '0.75rem',
-              transition: 'all 0.3s ease'
+              transition: 'all 0.3s ease',
+              position: 'relative',
+              zIndex: 1
             }}
           />
           
@@ -256,17 +260,17 @@ export function Watchlist({ isDarkMode = false }: WatchlistProps) {
           {(searchResults.length > 0 || filteredSampleAssets.length > 0) && searchTerm && (
             <div style={{
               position: 'absolute',
-              top: '100%',
+              top: 'calc(100% + 0.25rem)',
               left: 0,
               right: 0,
               backgroundColor: colors.surface,
               border: `1px solid ${colors.border}`,
               borderRadius: '0.5rem',
               boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-              zIndex: 50,
+              zIndex: 1000,
               maxHeight: '300px',
               overflowY: 'auto',
-              marginTop: '0.25rem'
+              marginTop: '0'
             }}>
               {/* API Search Results */}
               {searchResults.length > 0 && (
