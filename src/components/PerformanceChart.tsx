@@ -30,14 +30,14 @@ export function PerformanceChart({ portfolio }: PerformanceChartProps) {
   }
 
   return (
-    <div className="bg-white shadow rounded-lg">
-      <div className="px-6 py-4 border-b border-gray-200">
-        <h3 className="text-lg font-medium text-gray-900">Portfolio Performance</h3>
-        <p className="text-sm text-gray-500">30-day performance overview</p>
+    <div style={{ backgroundColor: 'white', boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)', borderRadius: '0.5rem' }}>
+      <div style={{ padding: '1.5rem', borderBottom: '1px solid #e5e7eb' }}>
+        <h3 style={{ fontSize: '1.125rem', fontWeight: '500', color: '#111827', margin: 0 }}>Portfolio Performance</h3>
+        <p style={{ fontSize: '0.875rem', color: '#6b7280', margin: '0.25rem 0 0 0' }}>30-day performance overview</p>
       </div>
       
-      <div className="p-6">
-        <div className="h-80">
+      <div style={{ padding: '1.5rem' }}>
+        <div style={{ height: '20rem' }}>
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={performanceData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />

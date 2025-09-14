@@ -84,27 +84,54 @@ export function AddTransaction({ portfolio, setPortfolio }: AddTransactionProps)
   }
 
   return (
-    <div className="bg-white shadow rounded-lg">
-      <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+    <div style={{ backgroundColor: 'white', boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)', borderRadius: '0.5rem' }}>
+      <div style={{ 
+        padding: '1.5rem', 
+        borderBottom: '1px solid #e5e7eb', 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center' 
+      }}>
         <div>
-          <h3 className="text-lg font-medium text-gray-900">Add Transaction</h3>
-          <p className="text-sm text-gray-500">Record a new buy or sell transaction</p>
+          <h3 style={{ fontSize: '1.125rem', fontWeight: '500', color: '#111827', margin: 0 }}>Add Transaction</h3>
+          <p style={{ fontSize: '0.875rem', color: '#6b7280', margin: '0.25rem 0 0 0' }}>Record a new buy or sell transaction</p>
         </div>
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            padding: '0.5rem 1rem',
+            border: '1px solid transparent',
+            fontSize: '0.875rem',
+            fontWeight: '500',
+            borderRadius: '0.375rem',
+            color: 'white',
+            backgroundColor: '#2563eb',
+            cursor: 'pointer'
+          }}
         >
-          <Plus className="h-4 w-4 mr-2" />
+          <Plus style={{ height: '1rem', width: '1rem', marginRight: '0.5rem' }} />
           {isOpen ? 'Cancel' : 'Add Transaction'}
         </button>
       </div>
 
       {isOpen && (
-        <div className="px-6 py-4">
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div style={{ padding: '1.5rem' }}>
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div style={{ 
+              display: 'grid', 
+              gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', 
+              gap: '1rem' 
+            }}>
               <div>
-                <label htmlFor="assetId" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="assetId" style={{ 
+                  display: 'block', 
+                  fontSize: '0.875rem', 
+                  fontWeight: '500', 
+                  color: '#374151',
+                  marginBottom: '0.25rem'
+                }}>
                   Asset *
                 </label>
                 <select
@@ -112,7 +139,16 @@ export function AddTransaction({ portfolio, setPortfolio }: AddTransactionProps)
                   name="assetId"
                   value={formData.assetId}
                   onChange={handleInputChange}
-                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  style={{
+                    marginTop: '0.25rem',
+                    display: 'block',
+                    width: '100%',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '0.375rem',
+                    boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+                    fontSize: '0.875rem',
+                    padding: '0.5rem 0.75rem'
+                  }}
                   required
                 >
                   <option value="">Select an asset</option>
@@ -125,7 +161,13 @@ export function AddTransaction({ portfolio, setPortfolio }: AddTransactionProps)
               </div>
 
               <div>
-                <label htmlFor="type" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="type" style={{ 
+                  display: 'block', 
+                  fontSize: '0.875rem', 
+                  fontWeight: '500', 
+                  color: '#374151',
+                  marginBottom: '0.25rem'
+                }}>
                   Transaction Type *
                 </label>
                 <select
@@ -133,7 +175,16 @@ export function AddTransaction({ portfolio, setPortfolio }: AddTransactionProps)
                   name="type"
                   value={formData.type}
                   onChange={handleInputChange}
-                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  style={{
+                    marginTop: '0.25rem',
+                    display: 'block',
+                    width: '100%',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '0.375rem',
+                    boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+                    fontSize: '0.875rem',
+                    padding: '0.5rem 0.75rem'
+                  }}
                 >
                   <option value="buy">Buy</option>
                   <option value="sell">Sell</option>
@@ -141,7 +192,13 @@ export function AddTransaction({ portfolio, setPortfolio }: AddTransactionProps)
               </div>
 
               <div>
-                <label htmlFor="quantity" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="quantity" style={{ 
+                  display: 'block', 
+                  fontSize: '0.875rem', 
+                  fontWeight: '500', 
+                  color: '#374151',
+                  marginBottom: '0.25rem'
+                }}>
                   Quantity *
                 </label>
                 <input
@@ -152,13 +209,28 @@ export function AddTransaction({ portfolio, setPortfolio }: AddTransactionProps)
                   onChange={handleInputChange}
                   step="0.0001"
                   min="0"
-                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  style={{
+                    marginTop: '0.25rem',
+                    display: 'block',
+                    width: '100%',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '0.375rem',
+                    boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+                    fontSize: '0.875rem',
+                    padding: '0.5rem 0.75rem'
+                  }}
                   required
                 />
               </div>
 
               <div>
-                <label htmlFor="price" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="price" style={{ 
+                  display: 'block', 
+                  fontSize: '0.875rem', 
+                  fontWeight: '500', 
+                  color: '#374151',
+                  marginBottom: '0.25rem'
+                }}>
                   Price per Share *
                 </label>
                 <input
@@ -169,13 +241,28 @@ export function AddTransaction({ portfolio, setPortfolio }: AddTransactionProps)
                   onChange={handleInputChange}
                   step="0.01"
                   min="0"
-                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  style={{
+                    marginTop: '0.25rem',
+                    display: 'block',
+                    width: '100%',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '0.375rem',
+                    boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+                    fontSize: '0.875rem',
+                    padding: '0.5rem 0.75rem'
+                  }}
                   required
                 />
               </div>
 
               <div>
-                <label htmlFor="date" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="date" style={{ 
+                  display: 'block', 
+                  fontSize: '0.875rem', 
+                  fontWeight: '500', 
+                  color: '#374151',
+                  marginBottom: '0.25rem'
+                }}>
                   Date *
                 </label>
                 <input
@@ -184,13 +271,28 @@ export function AddTransaction({ portfolio, setPortfolio }: AddTransactionProps)
                   name="date"
                   value={formData.date}
                   onChange={handleInputChange}
-                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  style={{
+                    marginTop: '0.25rem',
+                    display: 'block',
+                    width: '100%',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '0.375rem',
+                    boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+                    fontSize: '0.875rem',
+                    padding: '0.5rem 0.75rem'
+                  }}
                   required
                 />
               </div>
 
               <div>
-                <label htmlFor="fees" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="fees" style={{ 
+                  display: 'block', 
+                  fontSize: '0.875rem', 
+                  fontWeight: '500', 
+                  color: '#374151',
+                  marginBottom: '0.25rem'
+                }}>
                   Fees
                 </label>
                 <input
@@ -201,13 +303,28 @@ export function AddTransaction({ portfolio, setPortfolio }: AddTransactionProps)
                   onChange={handleInputChange}
                   step="0.01"
                   min="0"
-                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  style={{
+                    marginTop: '0.25rem',
+                    display: 'block',
+                    width: '100%',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '0.375rem',
+                    boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+                    fontSize: '0.875rem',
+                    padding: '0.5rem 0.75rem'
+                  }}
                 />
               </div>
             </div>
 
             <div>
-              <label htmlFor="notes" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="notes" style={{ 
+                display: 'block', 
+                fontSize: '0.875rem', 
+                fontWeight: '500', 
+                color: '#374151',
+                marginBottom: '0.25rem'
+              }}>
                 Notes
               </label>
               <textarea
@@ -216,25 +333,56 @@ export function AddTransaction({ portfolio, setPortfolio }: AddTransactionProps)
                 value={formData.notes}
                 onChange={handleInputChange}
                 rows={3}
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                style={{
+                  marginTop: '0.25rem',
+                  display: 'block',
+                  width: '100%',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '0.375rem',
+                  boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+                  fontSize: '0.875rem',
+                  padding: '0.5rem 0.75rem'
+                }}
                 placeholder="Optional notes about this transaction"
               />
             </div>
 
-            <div className="flex justify-end space-x-3">
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
-                className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  padding: '0.5rem 1rem',
+                  border: '1px solid #d1d5db',
+                  fontSize: '0.875rem',
+                  fontWeight: '500',
+                  borderRadius: '0.375rem',
+                  color: '#374151',
+                  backgroundColor: 'white',
+                  cursor: 'pointer'
+                }}
               >
-                <X className="h-4 w-4 mr-2" />
+                <X style={{ height: '1rem', width: '1rem', marginRight: '0.5rem' }} />
                 Cancel
               </button>
               <button
                 type="submit"
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  padding: '0.5rem 1rem',
+                  border: '1px solid transparent',
+                  fontSize: '0.875rem',
+                  fontWeight: '500',
+                  borderRadius: '0.375rem',
+                  color: 'white',
+                  backgroundColor: '#2563eb',
+                  cursor: 'pointer'
+                }}
               >
-                <Plus className="h-4 w-4 mr-2" />
+                <Plus style={{ height: '1rem', width: '1rem', marginRight: '0.5rem' }} />
                 Add Transaction
               </button>
             </div>

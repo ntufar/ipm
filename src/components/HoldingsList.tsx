@@ -8,90 +8,170 @@ interface HoldingsListProps {
 
 export function HoldingsList({ holdings }: HoldingsListProps) {
   return (
-    <div className="bg-white shadow rounded-lg">
-      <div className="px-6 py-4 border-b border-gray-200">
-        <h3 className="text-lg font-medium text-gray-900">Holdings</h3>
-        <p className="text-sm text-gray-500">Your current investment positions</p>
+    <div style={{ backgroundColor: 'white', boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)', borderRadius: '0.5rem' }}>
+      <div style={{ padding: '1.5rem', borderBottom: '1px solid #e5e7eb' }}>
+        <h3 style={{ fontSize: '1.125rem', fontWeight: '500', color: '#111827', margin: 0 }}>Holdings</h3>
+        <p style={{ fontSize: '0.875rem', color: '#6b7280', margin: '0.25rem 0 0 0' }}>Your current investment positions</p>
       </div>
       
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+      <div style={{ overflowX: 'auto' }}>
+        <table style={{ minWidth: '100%', borderCollapse: 'separate', borderSpacing: 0 }}>
+          <thead style={{ backgroundColor: '#f9fafb' }}>
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th style={{ 
+                padding: '0.75rem 1.5rem', 
+                textAlign: 'left', 
+                fontSize: '0.75rem', 
+                fontWeight: '500', 
+                color: '#6b7280', 
+                textTransform: 'uppercase', 
+                letterSpacing: '0.05em',
+                borderBottom: '1px solid #e5e7eb'
+              }}>
                 Symbol
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th style={{ 
+                padding: '0.75rem 1.5rem', 
+                textAlign: 'left', 
+                fontSize: '0.75rem', 
+                fontWeight: '500', 
+                color: '#6b7280', 
+                textTransform: 'uppercase', 
+                letterSpacing: '0.05em',
+                borderBottom: '1px solid #e5e7eb'
+              }}>
                 Name
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th style={{ 
+                padding: '0.75rem 1.5rem', 
+                textAlign: 'left', 
+                fontSize: '0.75rem', 
+                fontWeight: '500', 
+                color: '#6b7280', 
+                textTransform: 'uppercase', 
+                letterSpacing: '0.05em',
+                borderBottom: '1px solid #e5e7eb'
+              }}>
                 Quantity
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th style={{ 
+                padding: '0.75rem 1.5rem', 
+                textAlign: 'left', 
+                fontSize: '0.75rem', 
+                fontWeight: '500', 
+                color: '#6b7280', 
+                textTransform: 'uppercase', 
+                letterSpacing: '0.05em',
+                borderBottom: '1px solid #e5e7eb'
+              }}>
                 Avg Price
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th style={{ 
+                padding: '0.75rem 1.5rem', 
+                textAlign: 'left', 
+                fontSize: '0.75rem', 
+                fontWeight: '500', 
+                color: '#6b7280', 
+                textTransform: 'uppercase', 
+                letterSpacing: '0.05em',
+                borderBottom: '1px solid #e5e7eb'
+              }}>
                 Current Price
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th style={{ 
+                padding: '0.75rem 1.5rem', 
+                textAlign: 'left', 
+                fontSize: '0.75rem', 
+                fontWeight: '500', 
+                color: '#6b7280', 
+                textTransform: 'uppercase', 
+                letterSpacing: '0.05em',
+                borderBottom: '1px solid #e5e7eb'
+              }}>
                 Current Value
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th style={{ 
+                padding: '0.75rem 1.5rem', 
+                textAlign: 'left', 
+                fontSize: '0.75rem', 
+                fontWeight: '500', 
+                color: '#6b7280', 
+                textTransform: 'uppercase', 
+                letterSpacing: '0.05em',
+                borderBottom: '1px solid #e5e7eb'
+              }}>
                 Gain/Loss
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th style={{ 
+                padding: '0.75rem 1.5rem', 
+                textAlign: 'left', 
+                fontSize: '0.75rem', 
+                fontWeight: '500', 
+                color: '#6b7280', 
+                textTransform: 'uppercase', 
+                letterSpacing: '0.05em',
+                borderBottom: '1px solid #e5e7eb'
+              }}>
                 %
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody style={{ backgroundColor: 'white' }}>
             {holdings.map((holding) => {
               const isPositive = holding.gainLoss >= 0
               return (
-                <tr key={holding.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">
+                <tr key={holding.id} style={{ borderBottom: '1px solid #e5e7eb' }}>
+                  <td style={{ padding: '1rem 1.5rem', whiteSpace: 'nowrap' }}>
+                    <div style={{ fontSize: '0.875rem', fontWeight: '500', color: '#111827' }}>
                       {holding.asset.symbol}
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{holding.asset.name}</div>
+                  <td style={{ padding: '1rem 1.5rem', whiteSpace: 'nowrap' }}>
+                    <div style={{ fontSize: '0.875rem', color: '#111827' }}>{holding.asset.name}</div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td style={{ padding: '1rem 1.5rem', whiteSpace: 'nowrap', fontSize: '0.875rem', color: '#111827' }}>
                     {holding.quantity}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td style={{ padding: '1rem 1.5rem', whiteSpace: 'nowrap', fontSize: '0.875rem', color: '#111827' }}>
                     {formatCurrency(holding.averagePrice)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <span className="text-sm text-gray-900">
+                  <td style={{ padding: '1rem 1.5rem', whiteSpace: 'nowrap' }}>
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                      <span style={{ fontSize: '0.875rem', color: '#111827' }}>
                         {formatCurrency(holding.asset.currentPrice)}
                       </span>
-                      <span className={`ml-2 text-xs ${
-                        holding.asset.changePercent24h >= 0 ? 'text-green-600' : 'text-red-600'
-                      }`}>
+                      <span style={{ 
+                        marginLeft: '0.5rem', 
+                        fontSize: '0.75rem', 
+                        color: holding.asset.changePercent24h >= 0 ? '#059669' : '#dc2626'
+                      }}>
                         {holding.asset.changePercent24h >= 0 ? '+' : ''}{holding.asset.changePercent24h.toFixed(2)}%
                       </span>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td style={{ padding: '1rem 1.5rem', whiteSpace: 'nowrap', fontSize: '0.875rem', color: '#111827' }}>
                     {formatCurrency(holding.currentValue)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
+                  <td style={{ padding: '1rem 1.5rem', whiteSpace: 'nowrap' }}>
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
                       {isPositive ? (
-                        <TrendingUp className="h-4 w-4 text-green-600 mr-1" />
+                        <TrendingUp style={{ height: '1rem', width: '1rem', color: '#059669', marginRight: '0.25rem' }} />
                       ) : (
-                        <TrendingDown className="h-4 w-4 text-red-600 mr-1" />
+                        <TrendingDown style={{ height: '1rem', width: '1rem', color: '#dc2626', marginRight: '0.25rem' }} />
                       )}
-                      <span className={`text-sm ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
+                      <span style={{ 
+                        fontSize: '0.875rem', 
+                        color: isPositive ? '#059669' : '#dc2626'
+                      }}>
                         {formatCurrency(holding.gainLoss)}
                       </span>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`text-sm ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
+                  <td style={{ padding: '1rem 1.5rem', whiteSpace: 'nowrap' }}>
+                    <span style={{ 
+                      fontSize: '0.875rem', 
+                      color: isPositive ? '#059669' : '#dc2626'
+                    }}>
                       {formatPercent(holding.gainLossPercent)}
                     </span>
                   </td>

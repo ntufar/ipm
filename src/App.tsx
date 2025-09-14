@@ -12,16 +12,16 @@ function App() {
   const [activeTab, setActiveTab] = useState<'overview' | 'holdings' | 'transactions'>('overview')
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div style={{ minHeight: '100vh', backgroundColor: '#f9fafb' }}>
       {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
+      <header style={{ backgroundColor: 'white', boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)', borderBottom: '1px solid #e5e7eb' }}>
+        <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 1rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.5rem 0' }}>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Investment Portfolio Manager</h1>
-              <p className="text-gray-600">Track and manage your investments</p>
+              <h1 style={{ fontSize: '1.875rem', fontWeight: 'bold', color: '#111827', margin: 0 }}>Investment Portfolio Manager</h1>
+              <p style={{ color: '#6b7280', margin: '0.25rem 0 0 0' }}>Track and manage your investments</p>
             </div>
-            <div className="text-sm text-gray-500">
+            <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>
               Last updated: {portfolio.lastUpdated.toLocaleDateString()}
             </div>
           </div>
@@ -29,36 +29,54 @@ function App() {
       </header>
 
       {/* Navigation */}
-      <nav className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex space-x-8">
+      <nav style={{ backgroundColor: 'white', borderBottom: '1px solid #e5e7eb' }}>
+        <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 1rem' }}>
+          <div style={{ display: 'flex', gap: '2rem' }}>
             <button
               onClick={() => setActiveTab('overview')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'overview'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
+              style={{
+                padding: '1rem 0.25rem',
+                borderBottom: '2px solid',
+                fontWeight: '500',
+                fontSize: '0.875rem',
+                backgroundColor: 'transparent',
+                border: 'none',
+                cursor: 'pointer',
+                color: activeTab === 'overview' ? '#2563eb' : '#6b7280',
+                borderBottomColor: activeTab === 'overview' ? '#3b82f6' : 'transparent'
+              }}
             >
               Overview
             </button>
             <button
               onClick={() => setActiveTab('holdings')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'holdings'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
+              style={{
+                padding: '1rem 0.25rem',
+                borderBottom: '2px solid',
+                fontWeight: '500',
+                fontSize: '0.875rem',
+                backgroundColor: 'transparent',
+                border: 'none',
+                cursor: 'pointer',
+                color: activeTab === 'holdings' ? '#2563eb' : '#6b7280',
+                borderBottomColor: activeTab === 'holdings' ? '#3b82f6' : 'transparent'
+              }}
             >
               Holdings
             </button>
             <button
               onClick={() => setActiveTab('transactions')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'transactions'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
+              style={{
+                padding: '1rem 0.25rem',
+                borderBottom: '2px solid',
+                fontWeight: '500',
+                fontSize: '0.875rem',
+                backgroundColor: 'transparent',
+                border: 'none',
+                cursor: 'pointer',
+                color: activeTab === 'transactions' ? '#2563eb' : '#6b7280',
+                borderBottomColor: activeTab === 'transactions' ? '#3b82f6' : 'transparent'
+              }}
             >
               Transactions
             </button>
@@ -67,9 +85,9 @@ function App() {
       </nav>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main style={{ maxWidth: '1280px', margin: '0 auto', padding: '2rem 1rem' }}>
         {activeTab === 'overview' && (
-          <div className="space-y-8">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
             <PortfolioOverview portfolio={portfolio} />
             <PerformanceChart portfolio={portfolio} />
           </div>
@@ -80,14 +98,14 @@ function App() {
         )}
         
         {activeTab === 'transactions' && (
-          <div className="space-y-8">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
             <AddTransaction portfolio={portfolio} setPortfolio={setPortfolio} />
-            <div className="bg-white shadow rounded-lg">
-              <div className="px-6 py-4 border-b border-gray-200">
-                <h3 className="text-lg font-medium text-gray-900">Transaction History</h3>
+            <div style={{ backgroundColor: 'white', boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)', borderRadius: '0.5rem' }}>
+              <div style={{ padding: '1.5rem', borderBottom: '1px solid #e5e7eb' }}>
+                <h3 style={{ fontSize: '1.125rem', fontWeight: '500', color: '#111827', margin: 0 }}>Transaction History</h3>
               </div>
-              <div className="px-6 py-4">
-                <p className="text-gray-500">Transaction history will be displayed here</p>
+              <div style={{ padding: '1.5rem' }}>
+                <p style={{ color: '#6b7280', margin: 0 }}>Transaction history will be displayed here</p>
               </div>
             </div>
           </div>
