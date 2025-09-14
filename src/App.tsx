@@ -15,6 +15,7 @@ import { MarketNews } from './components/MarketNews'
 import { MarketStatus } from './components/MarketStatus'
 import { RealTimeQuotes } from './components/RealTimeQuotes'
 import { VirtualHoldingsList } from './components/VirtualHoldingsList'
+import { About } from './components/About'
 import { MemoizedPerformanceChart } from './components/MemoizedPerformanceChart'
 import { ThemeToggle } from './components/ThemeToggle'
 // import { MobileNavigation } from './components/MobileNavigation'
@@ -35,7 +36,7 @@ function AppContent() {
   const themeStyles = getThemeStyles(isDarkMode)
   
   const [portfolio, setPortfolio] = useState<Portfolio>(samplePortfolio)
-  const [activeTab, setActiveTab] = useState<'overview' | 'holdings' | 'transactions' | 'analytics' | 'watchlist' | 'market'>('overview')
+  const [activeTab, setActiveTab] = useState<'overview' | 'holdings' | 'transactions' | 'analytics' | 'watchlist' | 'market' | 'about'>('overview')
   const [isLoading, setIsLoading] = useState(false)
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date())
   // const [showAddTransaction, setShowAddTransaction] = useState(false)
@@ -57,7 +58,8 @@ function AppContent() {
       'transactions': 'Transactions',
       'analytics': 'Analytics',
       'watchlist': 'Watchlist',
-      'market': 'Market Data'
+      'market': 'Market Data',
+      'about': 'About'
     }
     
     const baseTitle = 'Investment Portfolio Manager'
@@ -470,7 +472,8 @@ function AppContent() {
               { id: 'transactions', label: 'Transactions' },
               { id: 'analytics', label: 'Analytics' },
               { id: 'watchlist', label: 'Watchlist' },
-              { id: 'market', label: 'Market' }
+              { id: 'market', label: 'Market' },
+              { id: 'about', label: 'About' }
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -566,6 +569,10 @@ function AppContent() {
             />
             <MarketNews isDarkMode={isDarkMode} />
           </div>
+        )}
+        
+        {activeTab === 'about' && (
+          <About isDarkMode={isDarkMode} />
         )}
       </main>
     </div>
