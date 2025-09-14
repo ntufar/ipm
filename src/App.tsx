@@ -16,7 +16,7 @@ import { ThemeToggle } from './components/ThemeToggle'
 // import { CardSkeleton, ChartSkeleton } from './components/LoadingSkeleton'
 import { ThemeProvider, useTheme } from './contexts/ThemeContext'
 import { samplePortfolio } from './data/sampleData'
-import type { Portfolio } from './types/index.js'
+import type { Portfolio, Holding } from './types/index.js'
 import { loadPortfolio, savePortfolio } from './utils/storage'
 import { fetchMultipleStockPrices } from './services/stockService'
 import { getThemeColors, getThemeStyles } from './utils/theme'
@@ -117,6 +117,52 @@ function AppContent() {
   }, [portfolio.holdings.length]) // Only re-run when holdings change
 
   const handlePortfolioUpdate = (updatedPortfolio: Portfolio) => {
+    setPortfolio(updatedPortfolio)
+  }
+
+  const handleUpdateHolding = (updatedHolding: Holding) => {
+    const updatedHoldings = portfolio.holdings.map(holding => 
+      holding.id === updatedHolding.id ? updatedHolding : holding
+    )
+    
+    // Recalculate portfolio totals
+    const totalValue = updatedHoldings.reduce((sum, holding) => sum + holding.currentValue, 0)
+    const totalCost = updatedHoldings.reduce((sum, holding) => sum + holding.totalCost, 0)
+    const totalGainLoss = totalValue - totalCost
+    const totalGainLossPercent = totalCost > 0 ? (totalGainLoss / totalCost) * 100 : 0
+    
+    const updatedPortfolio: Portfolio = {
+      ...portfolio,
+      holdings: updatedHoldings,
+      totalValue,
+      totalCost,
+      totalGainLoss,
+      totalGainLossPercent,
+      lastUpdated: new Date()
+    }
+    
+    setPortfolio(updatedPortfolio)
+  }
+
+  const handleDeleteHolding = (holdingId: string) => {
+    const updatedHoldings = portfolio.holdings.filter(holding => holding.id !== holdingId)
+    
+    // Recalculate portfolio totals
+    const totalValue = updatedHoldings.reduce((sum, holding) => sum + holding.currentValue, 0)
+    const totalCost = updatedHoldings.reduce((sum, holding) => sum + holding.totalCost, 0)
+    const totalGainLoss = totalValue - totalCost
+    const totalGainLossPercent = totalCost > 0 ? (totalGainLoss / totalCost) * 100 : 0
+    
+    const updatedPortfolio: Portfolio = {
+      ...portfolio,
+      holdings: updatedHoldings,
+      totalValue,
+      totalCost,
+      totalGainLoss,
+      totalGainLossPercent,
+      lastUpdated: new Date()
+    }
+    
     setPortfolio(updatedPortfolio)
   }
 
@@ -360,7 +406,12 @@ function AppContent() {
         )}
         
         {activeTab === 'holdings' && (
-          <VirtualHoldingsList holdings={portfolio.holdings} isDarkMode={isDarkMode} />
+          <VirtualHoldingsList 
+            holdings={portfolio.holdings} 
+            isDarkMode={isDarkMode}
+            onUpdateHolding={handleUpdateHolding}
+            onDeleteHolding={handleDeleteHolding}
+          />
         )}
         
         {activeTab === 'transactions' && (

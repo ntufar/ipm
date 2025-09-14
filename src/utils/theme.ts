@@ -66,6 +66,17 @@ export const getThemeStyles = (isDarkMode: boolean) => {
         fontSize: '0.875rem',
         fontWeight: '500',
         transition: 'all 0.2s',
+      },
+      danger: {
+        backgroundColor: colors.error,
+        color: '#ffffff',
+        border: 'none',
+        borderRadius: '0.375rem',
+        padding: '0.5rem 1rem',
+        cursor: 'pointer',
+        fontSize: '0.875rem',
+        fontWeight: '500',
+        transition: 'all 0.2s',
       }
     },
     

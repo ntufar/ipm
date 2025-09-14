@@ -1,26 +1,33 @@
 import { useState, useMemo, useCallback } from 'react'
-import { ChevronUp, ChevronDown } from 'lucide-react'
+import { ChevronUp, ChevronDown, Edit2, Trash2 } from 'lucide-react'
 import type { Holding } from '../types/index.js'
 import { getThemeColors, getThemeStyles } from '../utils/theme'
+import { EditHoldingModal } from './EditHoldingModal'
 
 interface VirtualHoldingsListProps {
   holdings: Holding[]
   isDarkMode?: boolean
   itemHeight?: number
   containerHeight?: number
+  onUpdateHolding?: (updatedHolding: Holding) => void
+  onDeleteHolding?: (holdingId: string) => void
 }
 
 export function VirtualHoldingsList({ 
   holdings, 
   isDarkMode = false, 
   itemHeight = 80,
-  containerHeight = 400 
+  containerHeight = 400,
+  onUpdateHolding,
+  onDeleteHolding
 }: VirtualHoldingsListProps) {
   const colors = getThemeColors(isDarkMode)
   const themeStyles = getThemeStyles(isDarkMode)
   const [scrollTop, setScrollTop] = useState(0)
   const [sortField, setSortField] = useState<keyof Holding>('currentValue')
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
+  const [editingHolding, setEditingHolding] = useState<Holding | null>(null)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
 
   // Sort holdings
   const sortedHoldings = useMemo(() => {
@@ -94,6 +101,30 @@ export function VirtualHoldingsList({
     return sortDirection === 'asc' ? <ChevronUp size={16} /> : <ChevronDown size={16} />
   }
 
+  const handleEditHolding = useCallback((holding: Holding) => {
+    setEditingHolding(holding)
+    setIsEditModalOpen(true)
+  }, [])
+
+  const handleDeleteHolding = useCallback((holdingId: string) => {
+    if (onDeleteHolding) {
+      onDeleteHolding(holdingId)
+    }
+  }, [onDeleteHolding])
+
+  const handleSaveHolding = useCallback((updatedHolding: Holding) => {
+    if (onUpdateHolding) {
+      onUpdateHolding(updatedHolding)
+    }
+    setIsEditModalOpen(false)
+    setEditingHolding(null)
+  }, [onUpdateHolding])
+
+  const handleCloseModal = useCallback(() => {
+    setIsEditModalOpen(false)
+    setEditingHolding(null)
+  }, [])
+
   return (
     <div style={{ ...themeStyles.card, transition: 'all 0.3s ease' }}>
       {/* Header */}
@@ -124,7 +155,7 @@ export function VirtualHoldingsList({
       {/* Table Header */}
       <div style={{ 
         display: 'grid', 
-        gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr',
+        gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr 80px',
         gap: '1rem',
         padding: '1rem 1.5rem',
         backgroundColor: colors.surface,
@@ -226,6 +257,15 @@ export function VirtualHoldingsList({
           Return %
           {getSortIcon('gainLossPercent')}
         </button>
+        <div style={{
+          fontSize: '0.875rem',
+          fontWeight: '600',
+          color: colors.textPrimary,
+          textAlign: 'center',
+          transition: 'color 0.3s ease'
+        }}>
+          Actions
+        </div>
       </div>
 
       {/* Virtual Scrolling Container */}
@@ -252,7 +292,7 @@ export function VirtualHoldingsList({
                   right: 0,
                   height: itemHeight,
                   display: 'grid',
-                  gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr',
+                  gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr 80px',
                   gap: '1rem',
                   alignItems: 'center',
                   padding: '0 1.5rem',
@@ -334,6 +374,51 @@ export function VirtualHoldingsList({
                     {formatPercent(holding.gainLossPercent)}
                   </div>
                 </div>
+
+                {/* Actions */}
+                <div style={{ 
+                  display: 'flex', 
+                  justifyContent: 'center', 
+                  alignItems: 'center',
+                  gap: '0.5rem'
+                }}>
+                  <button
+                    onClick={() => handleEditHolding(holding)}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: colors.primary,
+                      cursor: 'pointer',
+                      padding: '0.25rem',
+                      borderRadius: '0.25rem',
+                      transition: 'all 0.2s ease',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
+                    title="Edit holding"
+                  >
+                    <Edit2 size={16} />
+                  </button>
+                  <button
+                    onClick={() => handleDeleteHolding(holding.id)}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: colors.error,
+                      cursor: 'pointer',
+                      padding: '0.25rem',
+                      borderRadius: '0.25rem',
+                      transition: 'all 0.2s ease',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
+                    title="Delete holding"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
               </div>
             )
           })}
@@ -363,6 +448,18 @@ export function VirtualHoldingsList({
           </span>
         </div>
       </div>
+
+      {/* Edit Modal */}
+      {editingHolding && (
+        <EditHoldingModal
+          holding={editingHolding}
+          isOpen={isEditModalOpen}
+          onClose={handleCloseModal}
+          onSave={handleSaveHolding}
+          onDelete={handleDeleteHolding}
+          isDarkMode={isDarkMode}
+        />
+      )}
     </div>
   )
 }

@@ -486,50 +486,65 @@ export const sampleHoldings: Holding[] = [
     asset: sampleAssets[0], // AAPL
     quantity: 50,
     averagePrice: 165.20,
+    purchasePrice: 165.20,
+    purchaseDate: new Date('2024-01-15'),
     totalCost: 8260.00,
     currentValue: 8771.50,
     gainLoss: 511.50,
     gainLossPercent: 6.19,
+    notes: 'Core tech holding'
   },
   {
     id: '2',
     asset: sampleAssets[1], // GOOGL
     quantity: 25,
     averagePrice: 138.90,
+    purchasePrice: 138.90,
+    purchaseDate: new Date('2024-02-10'),
     totalCost: 3472.50,
     currentValue: 3564.00,
     gainLoss: 91.50,
     gainLossPercent: 2.64,
+    notes: 'Search engine exposure'
   },
   {
     id: '3',
     asset: sampleAssets[2], // MSFT
     quantity: 15,
     averagePrice: 365.40,
+    purchasePrice: 365.40,
+    purchaseDate: new Date('2024-02-20'),
     totalCost: 5481.00,
     currentValue: 5682.75,
     gainLoss: 201.75,
     gainLossPercent: 3.68,
+    notes: 'Cloud computing play'
   },
   {
     id: '4',
-    asset: sampleAssets[3], // TSLA
+    asset: sampleAssets[10], // TSLA
     quantity: 20,
     averagePrice: 275.80,
+    purchasePrice: 275.80,
+    purchaseDate: new Date('2024-03-05'),
     totalCost: 5516.00,
     currentValue: 4970.00,
     gainLoss: -546.00,
     gainLossPercent: -9.90,
+    notes: 'EV and energy storage'
   },
   {
     id: '5',
-    asset: sampleAssets[4], // NVDA
+    asset: sampleAssets[3], // NVDA
     quantity: 5,
     averagePrice: 820.15,
+    purchasePrice: 820.15,
+    purchaseDate: new Date('2024-03-15'),
     totalCost: 4100.75,
     currentValue: 4376.40,
     gainLoss: 275.65,
     gainLossPercent: 6.72,
+    notes: 'AI and GPU leader'
   },
 ];
 

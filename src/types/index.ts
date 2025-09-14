@@ -13,10 +13,13 @@ export interface Holding {
   asset: Asset;
   quantity: number;
   averagePrice: number;
+  purchasePrice: number;
+  purchaseDate: Date;
   totalCost: number;
   currentValue: number;
   gainLoss: number;
   gainLossPercent: number;
+  notes?: string;
 }
 
 export interface Transaction {
