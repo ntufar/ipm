@@ -11,6 +11,9 @@ import { AdditionalData } from './components/AdditionalData'
 import { AdvancedAnalytics } from './components/AdvancedAnalytics'
 import { Watchlist } from './components/Watchlist'
 import { Notifications } from './components/Notifications'
+import { MarketNews } from './components/MarketNews'
+import { MarketStatus } from './components/MarketStatus'
+import { RealTimeQuotes } from './components/RealTimeQuotes'
 import { VirtualHoldingsList } from './components/VirtualHoldingsList'
 import { MemoizedPerformanceChart } from './components/MemoizedPerformanceChart'
 import { ThemeToggle } from './components/ThemeToggle'
@@ -33,7 +36,7 @@ function AppContent() {
   const themeStyles = getThemeStyles(isDarkMode)
   
   const [portfolio, setPortfolio] = useState<Portfolio>(samplePortfolio)
-  const [activeTab, setActiveTab] = useState<'overview' | 'holdings' | 'transactions' | 'analytics' | 'watchlist'>('overview')
+  const [activeTab, setActiveTab] = useState<'overview' | 'holdings' | 'transactions' | 'analytics' | 'watchlist' | 'market'>('overview')
   const [isLoading, setIsLoading] = useState(false)
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date())
   // const [showAddTransaction, setShowAddTransaction] = useState(false)
@@ -375,7 +378,8 @@ function AppContent() {
               { id: 'holdings', label: 'Holdings' },
               { id: 'transactions', label: 'Transactions' },
               { id: 'analytics', label: 'Analytics' },
-              { id: 'watchlist', label: 'Watchlist' }
+              { id: 'watchlist', label: 'Watchlist' },
+              { id: 'market', label: 'Market' }
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -459,6 +463,17 @@ function AppContent() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
             <Watchlist isDarkMode={isDarkMode} />
             <Notifications portfolio={portfolio} isDarkMode={isDarkMode} />
+          </div>
+        )}
+        
+        {activeTab === 'market' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+            <MarketStatus isDarkMode={isDarkMode} />
+            <RealTimeQuotes 
+              symbols={portfolio.holdings.map(h => h.asset.symbol)} 
+              isDarkMode={isDarkMode} 
+            />
+            <MarketNews isDarkMode={isDarkMode} />
           </div>
         )}
       </main>
